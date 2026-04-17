@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "photocard_studio": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "photocard",
+        "node",
+        "/app/mcp.mjs"
+      ]
+    }
+  }
+}
