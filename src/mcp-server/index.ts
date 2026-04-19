@@ -162,11 +162,20 @@ async function fetchBd24Live() {
     const tMatch = entry.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) || entry.match(/<title>([\s\S]*?)<\/title>/);
     const headline = tMatch ? tMatch[1].trim() : "Untitled";
 
-    // BD24Live specific image extraction (more robust)
-    const iMatch = entry.match(/<media:content[^>]+url=["']([^"']+)["']/i) || 
-                   entry.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i) ||
-                   entry.match(/<description>[\s\S]*?src=["']([^"']+)["']/i);
-    const imageUrl = iMatch ? iMatch[1].trim() : null;
+    // Robust image extraction
+    let imageUrl = null;
+    const mediaMatch = entry.match(/<(?:media:content|media:thumbnail)[^>]+url=["']([^"']+)["']/i);
+    if (mediaMatch) {
+      imageUrl = mediaMatch[1].trim();
+    } else {
+      const enclosureMatch = entry.match(/<enclosure[^>]+url=["']([^"']+)["']/i);
+      if (enclosureMatch) {
+        imageUrl = enclosureMatch[1].trim();
+      } else {
+        const imgMatch = entry.match(/src=["']([^"']+\.(?:jpg|jpeg|png|webp|jfif|gif|svg)(?:\?[^"']*)?)["']/i);
+        if (imgMatch) imageUrl = imgMatch[1].trim();
+      }
+    }
 
     const dMatch = entry.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
     const pubDate = dMatch ? dMatch[1].trim() : "";

@@ -7,7 +7,11 @@ export async function GET() {
   try {
     const rssUrl = "https://www.prothomalo.com/stories.rss"
     const response = await fetch(rssUrl, {
-      next: { revalidate: 3600 } // Cache for 1 hour
+      cache: 'no-store',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+      }
     })
     
     if (!response.ok) {

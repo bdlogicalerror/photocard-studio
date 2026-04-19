@@ -106,6 +106,7 @@ export default function BD24LiveGallery() {
               index={idx}
               headline={item.headline}
               imageUrl={item.imageUrl}
+              source="BD24Live"
               shouldStart={idx === currentIndex}
               onComplete={handleComplete}
             />

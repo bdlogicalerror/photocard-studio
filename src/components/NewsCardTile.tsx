@@ -6,12 +6,13 @@ import { Download, Share2, Loader2, CheckCircle2, AlertCircle, Save, Copy } from
 interface NewsCardTileProps {
   headline: string
   imageUrl: string | null
+  source?: string
   index: number
   shouldStart: boolean
   onComplete: () => void
 }
 
-export default function NewsCardTile({ headline, imageUrl, index, shouldStart, onComplete }: NewsCardTileProps) {
+export default function NewsCardTile({ headline, imageUrl, source = 'News', index, shouldStart, onComplete }: NewsCardTileProps) {
   const [status, setStatus] = useState<'pending' | 'generating' | 'success' | 'error'>('pending')
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
   const [filename, setFilename] = useState<string | null>(null)
@@ -39,7 +40,7 @@ export default function NewsCardTile({ headline, imageUrl, index, shouldStart, o
             brandName: 'Kurigram City',
             handle: 'Kurigram City',
             website: 'Kurigram City',
-            source: 'Prothom Alo',
+            source,
             photos: [
               { id: 'p1', src: imageUrl, objectPosition: 'center', objectFit: 'cover', scale: 1 }
             ]

@@ -106,6 +106,7 @@ export default function ProthomAloGallery() {
               index={idx}
               headline={item.headline}
               imageUrl={item.imageUrl}
+              source="Prothom Alo"
               shouldStart={idx === currentIndex}
               onComplete={handleComplete}
             />
