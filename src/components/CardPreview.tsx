@@ -42,14 +42,14 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
     return { x: 50, y: 50 }
   }
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLImageElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isInteractive || !src || objectFit !== 'cover') return
     e.currentTarget.setPointerCapture(e.pointerId)
     isDragging.current = true
     startMouse.current = { x: e.clientX, y: e.clientY }
   }
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLImageElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging.current) return
     const dx = e.clientX - startMouse.current.x
     const dy = e.clientY - startMouse.current.y
@@ -65,28 +65,33 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
     }
   }
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLImageElement>) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging.current) return
     isDragging.current = false
     e.currentTarget.releasePointerCapture(e.pointerId)
   }
 
+  const bgSizeMap: Record<string, string> = {
+    'cover': 'cover',
+    'contain': 'contain',
+    'fill': '100% 100%'
+  }
+
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', background: '#2a2a2a' }}>
       {src ? (
-        <img
-          src={src}
-          alt=""
+        <div
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           style={{
             width: '100%', height: '100%',
-            objectFit: objectFit as any,
-            objectPosition,
+            backgroundImage: `url(${src})`,
+            backgroundSize: bgSizeMap[objectFit] || 'cover',
+            backgroundPosition: objectPosition,
+            backgroundRepeat: 'no-repeat',
             transform: `scale(${scale})`,
             transformOrigin: 'center',
-            display: 'block',
             cursor: isInteractive && objectFit === 'cover' ? 'move' : 'default',
             touchAction: 'none'
           }}

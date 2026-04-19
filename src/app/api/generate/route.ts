@@ -15,6 +15,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
 
+    // URL Rewriting for Tunnel/Internal Networking:
+    // If photos point to our own public domain, rewrite them to localhost for Puppeteer.
+    const host = request.headers.get('host') || ''
+    const port = process.env.PORT || 3000
+    const internalOrigin = `http://127.0.0.1:${port}`
+
+    if (cardData.photos && Array.isArray(cardData.photos)) {
+      cardData.photos = cardData.photos.map((p: any) => {
+        if (p.src && p.src.startsWith('http') && (p.src.includes(host) || (host && p.src.includes(host.split(':')[0])))) {
+          try {
+            const urlObj = new URL(p.src)
+            p.src = `${internalOrigin}${urlObj.pathname}${urlObj.search}${urlObj.hash}`
+          } catch (e) {}
+        }
+        return p
+      })
+    }
+
     const dataBase64 = Buffer.from(JSON.stringify(cardData), 'utf-8').toString('base64')
     const styleBase64 = styleOverrides ? Buffer.from(JSON.stringify(styleOverrides), 'utf-8').toString('base64') : ''
     
@@ -36,8 +54,6 @@ export async function POST(request: Request) {
 
     const page = await browser.newPage()
     
-    // Next.js runs on this port
-    const port = process.env.PORT || 3000
     // Use 127.0.0.1 for more reliable internal container networking
     const targetUrl = `http://127.0.0.1:${port}/render?data=${encodeURIComponent(dataBase64)}&templateId=${templateId}&style=${encodeURIComponent(styleBase64)}`
     

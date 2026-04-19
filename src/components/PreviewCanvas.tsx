@@ -131,9 +131,9 @@ export default function PreviewCanvas() {
             transition: 'width 0.2s',
           }}
         >
-          <CardPreview 
-            template={template} 
-            cardData={cardData} 
+          <CardPreview
+            template={template}
+            cardData={cardData}
             onPhotoPositionChange={(id, pos) => updatePhotoById(id, { objectPosition: pos })}
           />
         </div>

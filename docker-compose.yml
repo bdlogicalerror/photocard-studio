@@ -11,13 +11,12 @@ services:
       - PORT=3000
       - HOSTNAME=0.0.0.0
       - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
-      - PHOTOCARD_API_URL=http://127.0.0.1:3000/api/generate
+      - PHOTOCARD_API_URL=http://photocard:3000/api/generate
     restart: unless-stopped
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: photocard-tunnel
     command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    network_mode: service:photocard-studio
     restart: unless-stopped
-    depends_on:
-      - photocard-studio

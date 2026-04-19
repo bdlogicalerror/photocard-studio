@@ -90,7 +90,16 @@ function PhotoUploader({ idx, label }: { idx: number; label: string }) {
       >
         {photo?.src ? (
           <>
-            <img src={photo.src} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
+            <div 
+              style={{
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url(${photo.src})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
               <Upload size={16} className="text-white" />
             </div>

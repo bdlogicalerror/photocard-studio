@@ -1,7 +1,7 @@
-// src/components/NewsCardTile.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { Download, Share2, Loader2, CheckCircle2, AlertCircle, Save, Copy, Pencil } from 'lucide-react'
+import { Download, Share2, Loader2, CheckCircle2, AlertCircle, Save, Copy, Pencil, RefreshCw, Link as LinkIcon, ExternalLink } from 'lucide-react'
+import clsx from 'clsx'
 import { useStore } from '@/store/useStore'
 import { useGalleryStore, GalleryCardState } from '@/store/useGalleryStore'
 import { useRouter } from 'next/navigation'
@@ -10,13 +10,14 @@ import { BUILT_IN_TEMPLATES } from '@/lib/types'
 interface NewsCardTileProps {
   headline: string
   imageUrl: string | null
+  articleUrl?: string
   source?: string
   index: number
   shouldStart: boolean
   onComplete: () => void
 }
 
-export default function NewsCardTile({ headline, imageUrl, source = 'News', index, shouldStart, onComplete }: NewsCardTileProps) {
+export default function NewsCardTile({ headline, imageUrl, articleUrl, source = 'News', index, shouldStart, onComplete }: NewsCardTileProps) {
   const { cardStates, updateCardState } = useGalleryStore()
   const uniqueKey = `${source}-${index}`
   const state: GalleryCardState = cardStates[uniqueKey] || {
@@ -29,6 +30,19 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
     error: null
   }
   const { status, templateId: savedTemplateId, generatedImageUrl, filename, isSaved, isSaving, isCopying, error } = state
+
+  const [copyFeedback, setCopyFeedback] = useState<'headline' | 'link' | null>(null)
+
+  const handleCopyText = async (text: string, type: 'headline' | 'link') => {
+    try {
+      if (!text) return
+      await navigator.clipboard.writeText(text)
+      setCopyFeedback(type)
+      setTimeout(() => setCopyFeedback(null), 2000)
+    } catch (err) {
+      console.error('Copy failed', err)
+    }
+  }
 
   const setStatus = (v: any) => updateCardState(uniqueKey, { status: v })
   const setSelectedTemplateId = (v: any) => updateCardState(uniqueKey, { templateId: v })
@@ -51,12 +65,12 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
 
   const getDynamicTemplate = (text: string) => {
     const len = text.length
-    
+
     // Breaking News: accidents, crime, urgency
     if (text.includes('ব্রেকিং') || text.includes('নিহত') || text.includes('হামলা') || text.includes('গ্রেপ্তার') || text.includes('মামলা') || text.includes('আগুন') || text.includes('আটক') || text.includes('মৃত্যু') || text.includes('বিস্ফোরণ') || text.includes('অভিযান') || text.includes('উদ্ধার')) {
       return 'breaking-ribbon'
     }
-    
+
     // versus-clash: rivalry, matches
     if (text.includes('বনাম') || text.includes('লড়াই') || text.includes('মুখোমুখি') || text.includes('দ্বন্দ্ব')) {
       return 'versus-clash'
@@ -69,13 +83,13 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
 
     // quote-spotlight: statements, quotes, logic
     if (
-      len > 90 || 
+      len > 90 ||
       text.includes('‘') || text.includes('’') || text.includes('"') || text.includes("'") ||
       text.includes('বলেছেন') || text.includes('বললেন') || text.includes('জানিয়েছেন') || text.includes('জানান') || text.includes('দাবি') || text.includes('আহ্বান') || text.includes('মন্তব্য')
     ) {
       return 'quote-spotlight'
     }
-    
+
     // Fallback based on length
     if (len < 40) {
       return 'full-overlay'
@@ -90,7 +104,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
       const proxiedImage = imageUrl
         ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
         : null
-        
+
       const templateId = forceTemplateId || savedTemplateId || getDynamicTemplate(headline)
 
       const response = await fetch('/api/generate', {
@@ -118,7 +132,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
       })
 
       if (!response.ok) throw new Error('Generation failed')
-      
+
       const data = await response.json()
       setFilename(data.filename)
       setGeneratedImageUrl(data.url)
@@ -153,7 +167,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
       })
 
       if (!response.ok) throw new Error('Failed to save')
-      
+
       const data = await response.json()
       setGeneratedImageUrl(data.url)
       setIsSaved(true)
@@ -168,7 +182,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
   const handleShare = async () => {
     if (!generatedImageUrl) return
     const fullUrl = window.location.origin + generatedImageUrl
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -191,7 +205,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
     try {
       const response = await fetch(generatedImageUrl)
       const blob = await response.blob()
-      
+
       // Check if browser supports ClipboardItem for images
       if (typeof ClipboardItem !== 'undefined') {
         const item = new ClipboardItem({ 'image/png': blob })
@@ -229,7 +243,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
         { id: 'p3', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 }
       ]
     })
-    
+
     router.push('/')
   }
 
@@ -242,9 +256,9 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
               className="bg-black/70 text-white text-[10px] rounded px-2 py-1.5 border border-zinc-700 outline-none backdrop-blur-sm cursor-pointer hover:bg-black uppercase font-bold tracking-wider"
               value={savedTemplateId || getDynamicTemplate(headline)}
               onChange={(e) => {
-                 const newId = e.target.value
-                 setSelectedTemplateId(newId)
-                 generateCard(newId)
+                const newId = e.target.value
+                setSelectedTemplateId(newId)
+                generateCard(newId)
               }}
             >
               <optgroup label="Select Layout">
@@ -259,7 +273,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
         {status === 'pending' && (
           <div className="text-center p-6 space-y-2">
             <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center mx-auto text-zinc-700">
-                {index + 1}
+              {index + 1}
             </div>
             <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold">Waiting in queue</p>
           </div>
@@ -269,129 +283,170 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
           <div className="text-center p-6 space-y-4">
             <Loader2 className="w-8 h-8 text-red-500 animate-spin mx-auto" />
             <div>
-                <p className="text-xs font-bold text-white mb-1">Generating Photocard...</p>
-                <p className="text-[10px] text-zinc-500 line-clamp-2 px-4 italic">{headline}</p>
+              <p className="text-xs font-bold text-white mb-1">Generating Photocard...</p>
+              <p className="text-[10px] text-zinc-500 line-clamp-2 px-4 italic">{headline}</p>
             </div>
           </div>
         )}
 
         {status === 'success' && generatedImageUrl && (
-          <img 
-            src={generatedImageUrl} 
-            alt="Generated Card" 
+          <img
+            src={generatedImageUrl}
+            alt="Generated Card"
             className="w-full h-full object-contain bg-black"
           />
         )}
 
         {status === 'error' && (
-          <div className="text-center p-6 space-y-2 text-red-400">
+          <div className="text-center p-6 space-y-3 text-red-400">
             <AlertCircle className="w-8 h-8 mx-auto" />
-            <p className="text-xs font-bold uppercase">Error</p>
-            <p className="text-[10px] text-zinc-500">{error}</p>
+            <div>
+              <p className="text-xs font-bold uppercase">Error</p>
+              <p className="text-[10px] text-zinc-500 line-clamp-2">{error}</p>
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); generateCard(); }}
+              className="px-4 py-1.5 bg-red-900/30 hover:bg-red-900/50 border border-red-500/30 rounded-full text-xs font-bold text-red-400 transition-colors flex items-center gap-2 mx-auto"
+            >
+              <RefreshCw size={12} /> Retry
+            </button>
           </div>
         )}
 
         {status === 'success' && generatedImageUrl && (
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-             {!isSaved ? (
-               <button 
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="p-2.5 bg-red-600 text-white rounded-full hover:scale-110 transition-transform flex items-center gap-2"
-                  title="Save to Exports"
-               >
-                  {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-               </button>
-             ) : (
-               <div className="p-2.5 bg-green-600 text-white rounded-full flex items-center" title="Saved">
-                  <CheckCircle2 size={18} />
-               </div>
-             )}
-             <button 
-                onClick={handleDownload}
-                className="p-2.5 bg-white text-black rounded-full hover:scale-110 transition-transform flex items-center"
-                title="Download"
-             >
-                <Download size={18} />
-             </button>
-             <button 
-                onClick={handleShare}
-                className="p-2.5 bg-zinc-800 text-white rounded-full hover:scale-110 transition-transform flex items-center"
-                title="Share Link"
-             >
-                <Share2 size={18} />
-             </button>
-             <button 
-                onClick={handleCopy}
-                disabled={isCopying}
-                className="p-2.5 bg-zinc-700 text-white rounded-full hover:scale-110 transition-transform flex items-center"
-                title="Copy Image"
-             >
-                {isCopying ? <Loader2 size={18} className="animate-spin" /> : <Copy size={18} />}
-             </button>
-             <button 
-                onClick={handleEditInStudio}
-                className="p-2.5 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform flex items-center"
-                title="Edit in Studio"
-             >
-                <Pencil size={18} />
-             </button>
+            {!isSaved ? (
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="p-2.5 bg-red-600 text-white rounded-full hover:scale-110 transition-transform flex items-center gap-2"
+                title="Save to Exports"
+              >
+                {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+              </button>
+            ) : (
+              <div className="p-2.5 bg-green-600 text-white rounded-full flex items-center" title="Saved">
+                <CheckCircle2 size={18} />
+              </div>
+            )}
+            <button
+              onClick={handleDownload}
+              className="p-2.5 bg-white text-black rounded-full hover:scale-110 transition-transform flex items-center"
+              title="Download"
+            >
+              <Download size={18} />
+            </button>
+            <button
+              onClick={handleShare}
+              className="p-2.5 bg-zinc-800 text-white rounded-full hover:scale-110 transition-transform flex items-center"
+              title="Share Link"
+            >
+              <Share2 size={18} />
+            </button>
+            <button
+              onClick={handleCopy}
+              disabled={isCopying}
+              className="p-2.5 bg-zinc-700 text-white rounded-full hover:scale-110 transition-transform flex items-center"
+              title="Copy Image"
+            >
+              {isCopying ? <Loader2 size={18} className="animate-spin" /> : <Copy size={18} />}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); generateCard(); }}
+              className="p-2.5 bg-zinc-800 text-white rounded-full hover:scale-110 transition-transform flex items-center"
+              title="Regenerate"
+            >
+              <RefreshCw size={18} />
+            </button>
+            <button
+              onClick={handleEditInStudio}
+              className="p-2.5 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform flex items-center"
+              title="Edit in Studio"
+            >
+              <Pencil size={18} />
+            </button>
           </div>
         )}
       </div>
 
-      <div className="p-4 border-t border-zinc-800 flex items-start gap-3">
+      <div className="p-4 border-t border-zinc-800 flex flex-col gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-1">
-            Story #{index + 1}
-          </p>
-          <h3 className="text-xs font-semibold text-zinc-100 line-clamp-2 leading-relaxed">
-            {headline}
-          </h3>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
+              Story #{index + 1} • {source}
+            </p>
+            {articleUrl && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleCopyText(articleUrl, 'link'); }}
+                className={clsx(
+                  "flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded transition-all",
+                  copyFeedback === 'link' ? "bg-green-500/20 text-green-400" : "text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 active:scale-95"
+                )}
+              >
+                {copyFeedback === 'link' ? <CheckCircle2 size={10} /> : <ExternalLink size={10} />}
+                {copyFeedback === 'link' ? 'LINK COPIED' : 'COPY NEWS LINK'}
+              </button>
+            )}
+          </div>
+
+          <div className="group/title relative">
+            <h3 className="text-xs font-semibold text-zinc-100 line-clamp-2 leading-relaxed pr-8">
+              {headline}
+            </h3>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCopyText(headline, 'headline'); }}
+              className={clsx(
+                "absolute right-0 top-0 p-1.5 rounded-md transition-all opacity-0 group-hover/title:opacity-100 active:scale-90",
+                copyFeedback === 'headline' ? "text-green-500" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+              )}
+              title="Copy Full Headline"
+            >
+              {copyFeedback === 'headline' ? <CheckCircle2 size={14} /> : <Copy size={14} />}
+            </button>
+          </div>
         </div>
-        <div className="flex-shrink-0">
-            {status === 'success' && <CheckCircle2 className="text-green-500" size={16} />}
-            {status === 'generating' && <Loader2 className="text-red-500 animate-spin" size={16} />}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {status === 'success' && <CheckCircle2 className="text-green-500" size={14} />}
+            {status === 'generating' && <Loader2 className="text-red-500 animate-spin" size={14} />}
+            <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-tighter">
+              {status === 'success' ? 'Ready' : status === 'generating' ? 'Generating...' : 'Pending'}
+            </span>
+          </div>
         </div>
       </div>
-      
+
       {/* Action buttons footer for mobile visibility */}
       {status === 'success' && (
         <div className="md:hidden flex border-t border-zinc-800">
-            {!isSaved && (
-              <button 
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-red-500 border-r border-zinc-800 active:bg-zinc-800"
-              >
-                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save
-              </button>
-            )}
-            <button 
-                onClick={handleDownload}
-                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 border-r border-zinc-800 active:bg-zinc-800"
+          {!isSaved && (
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-red-500 border-r border-zinc-800 active:bg-zinc-800"
             >
-                <Download size={14} /> Download
+              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save
             </button>
-            <button 
-                onClick={handleShare}
-                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 border-r border-zinc-800 active:bg-zinc-800"
-            >
-                <Share2 size={14} /> Share
-            </button>
-            <button 
-                onClick={handleCopy}
-                disabled={isCopying}
-                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 border-r border-zinc-800 active:bg-zinc-800"
-            >
-                {isCopying ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />} Copy
-            </button>
-            <button 
-                onClick={handleEditInStudio}
-                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-blue-400 active:bg-zinc-800"
-            >
-                <Pencil size={14} /> Edit
-            </button>
+          )}
+          <button
+            onClick={handleDownload}
+            className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 border-r border-zinc-800 active:bg-zinc-800"
+          >
+            <Download size={14} /> Download
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); generateCard(); }}
+            className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 border-r border-zinc-800 active:bg-zinc-800"
+          >
+            <RefreshCw size={14} /> Retry
+          </button>
+          <button
+            onClick={handleEditInStudio}
+            className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-blue-400 active:bg-zinc-800"
+          >
+            <Pencil size={14} /> Edit
+          </button>
         </div>
       )}
     </div>

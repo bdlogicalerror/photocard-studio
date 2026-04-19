@@ -38,7 +38,10 @@ export async function GET() {
       const dMatch = entry.match(/<pubDate>([\s\S]*?)<\/pubDate>/)
       const pubDate = dMatch ? dMatch[1].trim() : ""
 
-      items.push({ headline, imageUrl, pubDate })
+      const lMatch = entry.match(/<link>([\s\S]*?)<\/link>/)
+      const articleUrl = lMatch ? lMatch[1].trim() : ""
+
+      items.push({ headline, imageUrl, pubDate, articleUrl })
       count++
     }
 
