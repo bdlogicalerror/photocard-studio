@@ -113,6 +113,7 @@ export default function ProthomAloGallery() {
               index={idx}
               headline={item.headline}
               imageUrl={item.imageUrl}
+              category={item.category}
               articleUrl={item.articleUrl}
               source="Prothom Alo"
               shouldStart={idx === currentIndex}

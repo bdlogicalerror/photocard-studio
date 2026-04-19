@@ -11,13 +11,14 @@ interface NewsCardTileProps {
   headline: string
   imageUrl: string | null
   articleUrl?: string
+  category?: string
   source?: string
   index: number
   shouldStart: boolean
   onComplete: () => void
 }
 
-export default function NewsCardTile({ headline, imageUrl, articleUrl, source = 'News', index, shouldStart, onComplete }: NewsCardTileProps) {
+export default function NewsCardTile({ headline, imageUrl, articleUrl, category, source = 'News', index, shouldStart, onComplete }: NewsCardTileProps) {
   const { cardStates, updateCardState } = useGalleryStore()
   const uniqueKey = `${source}-${index}`
   const state: GalleryCardState = cardStates[uniqueKey] || {
@@ -63,37 +64,115 @@ export default function NewsCardTile({ headline, imageUrl, articleUrl, source = 
     }
   }, [shouldStart, status])
 
-  const getDynamicTemplate = (text: string) => {
+  const getDynamicTemplate = (text: string): string => {
     const len = text.length
+    const cleanText = text.trim()
+    const cat = category?.toLowerCase() || ''
 
-    // Breaking News: accidents, crime, urgency
-    if (text.includes('ব্রেকিং') || text.includes('নিহত') || text.includes('হামলা') || text.includes('গ্রেপ্তার') || text.includes('মামলা') || text.includes('আগুন') || text.includes('আটক') || text.includes('মৃত্যু') || text.includes('বিস্ফোরণ') || text.includes('অভিযান') || text.includes('উদ্ধার')) {
-      return 'breaking-ribbon'
+    // 0. CATEGORY-BASED OVERRIDES (Highest Priority)
+    if (cat.includes('খেলা') || cat.includes('ফুটবল') || cat.includes('ক্রিকেট') || cat.includes('sports')) {
+      if (text.includes('বনাম') || text.includes('vs')) return 'versus-debate'
+      return 'single-news'
+    }
+    if (cat.includes('বিনোদন') || cat.includes('বিনোদন') || cat.includes('entertainment') || cat.includes('গান') || cat.includes('সিনেমা')) {
+      return 'news-reel'
+    }
+    if (cat.includes('মতামত') || cat.includes('সম্পাদকীয়') || cat.includes('opinion') || cat.includes('editorial')) {
+      return 'editorial-gold'
+    }
+    if (cat.includes('অপরাধ') || cat.includes('ক্রাইম') || cat.includes('crime')) {
+      return 'impact-carbon'
+    }
+    if (cat.includes('প্রযুক্তি') || cat.includes('tech') || cat.includes('বিজ্ঞান') || cat.includes('science')) {
+      return 'side-story'
+    }
+    if (cat.includes('বাণিজ্য') || cat.includes('অর্থনীতি') || cat.includes('business') || cat.includes('economy')) {
+      return 'stat-fact'
     }
 
-    // versus-clash: rivalry, matches
-    if (text.includes('বনাম') || text.includes('লড়াই') || text.includes('মুখোমুখি') || text.includes('দ্বন্দ্ব')) {
-      return 'versus-clash'
+    // 1. HIGH-IMPACT / BREAKING / CRISIS (Urgent news)
+    const impactKeywords = [
+      'ব্রেকিং', 'নিহত', 'হামলা', 'গ্রেপ্তার', 'মামলা', 'আগুন', 'আটক', 'মৃত্যু',
+      'বিস্ফোরণ', 'অভিযান', 'উদ্ধার', 'ভূমিকম্প', 'নিখোঁজ', 'ধর্ষণ', 'খুন',
+      'অবরোধ', 'হরতাল', 'সংঘর্ষ', 'গুলি', 'দুর্ঘটনা', 'অগ্নিকাণ্ড', 'নিখোঁজ',
+      'আহত', 'রক্তাক্ত', 'তদন্ত', 'সতর্কবার্তা', 'জরুরি', 'কারাদণ্ড', 'ফাঁসি'
+    ]
+    if (impactKeywords.some(k => text.includes(k))) {
+      return 'impact-carbon' // Bold, aggressive look
     }
 
-    // poll-vote: questions
-    if (text.includes('কেমন') || text.includes('কেন') || text.includes('কীভাবে') || text.includes('?') || text.includes('কী ')) {
-      return 'poll-vote'
+    // 2. VERSUS / RIVALRY (Sports or Political showdowns)
+    const vsKeywords = ['বনাম', 'লড়াই', 'মুখোমুখি', 'দ্বন্দ্ব', 'ভার্সেস', 'vs', 'দ্বৈরথ']
+    if (vsKeywords.some(k => text.includes(k))) {
+      return 'versus-debate'
     }
 
-    // quote-spotlight: statements, quotes, logic
-    if (
-      len > 90 ||
-      text.includes('‘') || text.includes('’') || text.includes('"') || text.includes("'") ||
-      text.includes('বলেছেন') || text.includes('বললেন') || text.includes('জানিয়েছেন') || text.includes('জানান') || text.includes('দাবি') || text.includes('আহ্বান') || text.includes('মন্তব্য')
-    ) {
+    // 3. SPORTS GENERAL
+    const sportsKeywords = [
+      'ফুটবল', 'ক্রিকেট', 'বিশ্বকাপ', 'আইপিএল', 'বিপিএল', 'সিরিজ', 'টুর্নামেন্ট',
+      'মেসি', 'নেইমার', 'এমবাপ্পে', 'কোহলি', 'সাকিব', 'তামিম', 'মুশফিক', 
+      'মাশরাফি', 'হ্যাটট্রিক', 'সেঞ্চুরি', 'উইকেট', 'চ্যাম্পিয়ন', 'ফাইনাল'
+    ]
+    if (sportsKeywords.some(k => text.includes(k))) {
+      return 'single-news' // Professional blue theme
+    }
+
+    // 4. ENTERTAINMENT / CELEBRITY / LIFESTYLE
+    const entertainmentKeywords = [
+      'বিনোদন', 'সিনেমা', 'বলিউড', 'হলিউড', 'শাকিব', 'পরিমণি', 'তারকা',
+      'উৎসব', 'ঈদ', 'গান', 'ভাইরাল', 'ভিডিও', 'নাটক', 'অভিনেতা', 'অভিনেত্রী',
+      'জয়া আহসান', 'ট্রল', 'টিজার', 'ট্রেইলার', 'মুক্তি', 'কনসার্ট', 'জন্মদিন'
+    ]
+    if (entertainmentKeywords.some(k => text.includes(k))) {
+      return 'news-reel' // Glassy, mobile-first look
+    }
+
+    // 5. DATA / ECONOMY / STATISTICS
+    const statKeywords = [
+      'শতাংশ', 'কোটি', 'লাখ', 'হাজার', 'গুণ', 'দাম বেড়েছে', 'দাম কমেছে', 'সূচক',
+      'শেয়ারবাজার', 'বাজেট', 'রিজার্ভ', 'ডলার', 'রাজস্ব', 'ট্যাক্স', 'শুল্ক',
+      'দ্রব্যমূল্য', 'বাজারদর', 'রেকর্ড', 'সর্বোচ্চ', 'সর্বনিম্ন'
+    ]
+    if (statKeywords.some(k => text.includes(k))) {
+      return 'stat-fact' // Highlights numbers
+    }
+
+    // 6. QUOTES / INTERVIEWS / OPINIONS
+    const quoteKeywords = [
+      'বললেন', 'জানালেন', 'মন্তব্য', 'দাবি', 'আহ্বান', 'বলছেন', 'সাক্ষাৎকার',
+      'প্রশ্ন', 'উত্তর', 'অভিযোগ', 'আশ্বাস', 'ঘোষণা', 'অঙ্গীকার'
+    ]
+    const hasQuotes = text.includes('‘') || text.includes('’') || text.includes('"') || text.includes('“') || text.includes('”')
+    if (hasQuotes || quoteKeywords.some(k => text.includes(k))) {
       return 'quote-spotlight'
     }
 
-    // Fallback based on length
-    if (len < 40) {
-      return 'full-overlay'
+    // 7. QUESTIONS / POLLS
+    if (text.includes('?') || text.startsWith('কেমন') || text.startsWith('কেন') || text.startsWith('কীভাবে') || text.startsWith('কারা')) {
+      return 'poll-voting'
     }
+
+    // 8. LIFESTYLE / ENVIRONMENT / TECH (Green/Nature)
+    const natureKeywords = [
+      'জলবায়ু', 'আবহাওয়া', 'পরিবেশ', 'প্রযুক্তি', 'স্মার্টফোন', 'আইফোন',
+      'রোবট', 'চাঁদ', 'মহাকাশ', 'বিদ্যুৎ', 'গ্যাস', 'বৃষ্টি', 'ঝড়', 
+      'বন্যা', 'রোদ', 'শীত', 'গরম', 'প্রাকৃতিক', 'বৃক্ষরোপণ'
+    ]
+    if (natureKeywords.some(k => text.includes(k))) {
+      return 'side-story' // Green accent theme
+    }
+
+    // 9. EDITORIAL / ANALYSIS / LONG STORIES
+    if (len > 75 || text.includes('বিশ্লেষণ') || text.includes('নেপথ্য') || text.includes('ইতিহাস')) {
+      return 'editorial-gold' // High-end serif look
+    }
+
+    // 10. MINIMAL / SHORT NEWS
+    if (len < 35) {
+      return 'minimal-white'
+    }
+
+    // Fallback
     return 'single-news'
   }
 

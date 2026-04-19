@@ -19,6 +19,10 @@ const LAYOUT_OPTIONS: { value: TemplateLayout; label: string; photos: 1 | 2 | 3 
   { value: 'quote-focus',      label: 'Quote Focus',       photos: 1 },
   { value: 'breaking-alert',   label: 'Breaking News',     photos: 1 },
   { value: 'stat-highlight',   label: 'Factoid / Stat',    photos: 1 },
+  { value: 'portrait-editorial', label: 'Editorial',       photos: 1 },
+  { value: 'impact-hero',      label: 'Impact / Big',      photos: 1 },
+  { value: 'news-reel',        label: 'Social Reel',       photos: 1 },
+  { value: 'modern-duo',       label: 'Vertical Split',    photos: 2 },
 ]
 
 const LAYOUT_ICONS: Record<TemplateLayout, string> = {
@@ -34,6 +38,10 @@ const LAYOUT_ICONS: Record<TemplateLayout, string> = {
   'quote-focus':       '❝██❞\n████',
   'breaking-alert':    '!██!\n████',
   'stat-highlight':    '100%\n████',
+  'portrait-editorial':'█▬▬\n█▬▬',
+  'impact-hero':       '███\n██-█',
+  'news-reel':         '  ▓  \n ███ ',
+  'modern-duo':        '▬▬\n▬▬',
 }
 
 function LayoutThumb({ layout }: { layout: TemplateLayout }) {
@@ -48,8 +56,12 @@ function LayoutThumb({ layout }: { layout: TemplateLayout }) {
     'poll-vote': 'bg-zinc-700',
     'versus-clash': 'bg-zinc-700',
     'quote-focus': 'bg-zinc-700',
-    'breaking-alert': 'bg-zinc-700',
-    'stat-highlight': 'bg-zinc-700',
+    'breaking-alert': 'bg-red-700',
+    'stat-highlight': 'bg-green-700',
+    'portrait-editorial': 'bg-blue-700',
+    'impact-hero': 'bg-zinc-800',
+    'news-reel': 'bg-sky-700',
+    'modern-duo': 'bg-zinc-600',
   }
   const w = 36, h = 36
   const layouts: Record<TemplateLayout, React.ReactNode> = {
@@ -138,6 +150,35 @@ function LayoutThumb({ layout }: { layout: TemplateLayout }) {
         <rect x="18" y="0" width="18" height="36" fill="#166534"/>
         <text x="19" y="16" fontSize="12" fontWeight="bold" fill="#86efac">00%</text>
         <rect x="0" y="34" width="36" height="2" fill="#111"/>
+      </svg>
+    ),
+    'portrait-editorial': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="16" height="36" fill="#555"/>
+        <rect x="18" y="4" width="18" height="4" fill="#3b82f6"/>
+        <rect x="18" y="10" width="18" height="2" fill="#fff"/>
+        <rect x="18" y="14" width="18" height="2" fill="#fff"/>
+        <rect x="18" y="18" width="12" height="2" fill="#fff"/>
+      </svg>
+    ),
+    'impact-hero': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="36" height="36" fill="#555"/>
+        <rect x="4" y="20" width="28" height="12" fill="rgba(0,0,0,0.8)"/>
+        <rect x="6" y="24" width="24" height="4" fill="#ef4444"/>
+      </svg>
+    ),
+    'news-reel': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="8" y="0" width="20" height="36" fill="#555"/>
+        <rect x="10" y="28" width="16" height="4" fill="#0ea5e9"/>
+      </svg>
+    ),
+    'modern-duo': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="17" height="36" fill="#555"/>
+        <rect x="19" y="0" width="17" height="36" fill="#666"/>
+        <rect x="0" y="30" width="36" height="6" fill="#27272a"/>
       </svg>
     ),
   }

@@ -41,7 +41,10 @@ export async function GET() {
       const lMatch = entry.match(/<link>([\s\S]*?)<\/link>/)
       const articleUrl = lMatch ? lMatch[1].trim() : ""
 
-      items.push({ headline, imageUrl, pubDate, articleUrl })
+      const catMatch = entry.match(/<category><!\[CDATA\[([\s\S]*?)\]\]><\/category>/) || entry.match(/<category>([\s\S]*?)<\/category>/)
+      const category = catMatch ? catMatch[1].trim() : "General"
+
+      items.push({ headline, imageUrl, pubDate, articleUrl, category })
       count++
     }
 
