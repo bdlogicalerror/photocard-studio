@@ -1,7 +1,9 @@
 // src/components/NewsCardTile.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { Download, Share2, Loader2, CheckCircle2, AlertCircle, Save, Copy } from 'lucide-react'
+import { Download, Share2, Loader2, CheckCircle2, AlertCircle, Save, Copy, Pencil } from 'lucide-react'
+import { useStore } from '@/store/useStore'
+import { useRouter } from 'next/navigation'
 
 interface NewsCardTileProps {
   headline: string
@@ -20,6 +22,9 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
   const [isSaving, setIsSaving] = useState(false)
   const [isCopying, setIsCopying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const updateCardData = useStore(s => s.updateCardData)
+  const router = useRouter()
 
   useEffect(() => {
     if (shouldStart && status === 'pending') {
@@ -145,6 +150,28 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
     }
   }
 
+  const handleEditInStudio = () => {
+    const proxiedImage = imageUrl
+      ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
+      : null
+
+    updateCardData({
+      headline,
+      subheadline: '',
+      brandName: 'Kurigram City',
+      handle: 'Kurigram City',
+      website: 'Kurigram City',
+      source,
+      photos: [
+        { id: 'p1', src: proxiedImage, objectPosition: 'center', objectFit: 'cover', scale: 1 },
+        { id: 'p2', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
+        { id: 'p3', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 }
+      ]
+    })
+    
+    router.push('/')
+  }
+
   return (
     <div className="group relative bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden transition-all hover:border-zinc-700">
       <div className="aspect-square relative bg-zinc-950 flex items-center justify-center">
@@ -221,6 +248,13 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
              >
                 {isCopying ? <Loader2 size={18} className="animate-spin" /> : <Copy size={18} />}
              </button>
+             <button 
+                onClick={handleEditInStudio}
+                className="p-2.5 bg-blue-600 text-white rounded-full hover:scale-110 transition-transform flex items-center"
+                title="Edit in Studio"
+             >
+                <Pencil size={18} />
+             </button>
           </div>
         )}
       </div>
@@ -267,9 +301,15 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
             <button 
                 onClick={handleCopy}
                 disabled={isCopying}
-                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 active:bg-zinc-800"
+                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-zinc-400 border-r border-zinc-800 active:bg-zinc-800"
             >
                 {isCopying ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />} Copy
+            </button>
+            <button 
+                onClick={handleEditInStudio}
+                className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold text-blue-400 active:bg-zinc-800"
+            >
+                <Pencil size={14} /> Edit
             </button>
         </div>
       )}
