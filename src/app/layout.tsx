@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Bengali news photocard generator with multiple templates',
 }
 
+import Header from '@/components/Header'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
@@ -18,7 +20,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="bg-zinc-950 text-white antialiased">{children}</body>
+      <body className="bg-zinc-950 text-white antialiased overflow-hidden h-screen w-screen flex flex-col">
+        <Header />
+        <main className="flex-1 relative pt-12 overflow-hidden">
+          {children}
+        </main>
+      </body>
     </html>
   )
 }

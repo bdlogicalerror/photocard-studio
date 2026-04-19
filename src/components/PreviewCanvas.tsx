@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useStore, useActiveTemplate } from '@/store/useStore'
 import CardPreview from './CardPreview'
-import { Download, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+import { Download, ZoomIn, ZoomOut, Maximize2, Facebook, Share2 } from 'lucide-react'
 
 export default function PreviewCanvas() {
   const { cardData } = useStore()
@@ -34,10 +34,49 @@ export default function PreviewCanvas() {
     }
   }
 
+  const handleShare = async () => {
+    setExporting(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const el = document.getElementById('card-preview')
+      if (!el) return
+      const canvas = await html2canvas(el, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      })
+
+      const dataUrl = canvas.toDataURL('image/png')
+      const blob = await (await fetch(dataUrl)).blob()
+      const file = new File([blob], 'photocard.png', { type: 'image/png' })
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Photocard Studio',
+          text: `Check out this photocard: ${cardData.headline}`,
+        })
+      } else {
+        // Fallback for desktop/unsupported browsers
+        const link = document.createElement('a')
+        link.download = `${template.name.toLowerCase().replace(/\s+/g, '-')}.png`
+        link.href = dataUrl
+        link.click()
+        alert('Sharing directly is not supported on this browser. The image has been downloaded—you can now upload it to Facebook manually.')
+      }
+    } catch (err) {
+      console.error('Share failed:', err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-[#0d0d0d] min-w-0 overflow-hidden">
       {/* Toolbar */}
-      <div className="flex flex-wrap flex-col sm:flex-row items-center justify-between px-3 md:px-5 py-3 gap-3 border-b border-zinc-800">
+      <div className="flex items-center justify-between px-3 md:px-5 py-2 md:py-3 gap-2 border-b border-zinc-800">
         <div className="flex items-center gap-1">
           <button
             onClick={() => setZoom(z => Math.max(40, z - 10))}
@@ -45,30 +84,36 @@ export default function PreviewCanvas() {
           >
             <ZoomOut size={14} />
           </button>
-          <span className="text-xs text-zinc-500 w-10 text-center">{zoom}%</span>
+          <span className="text-[10px] md:text-xs text-zinc-500 w-8 md:w-10 text-center">{zoom}%</span>
           <button
             onClick={() => setZoom(z => Math.min(150, z + 10))}
             className="w-7 h-7 flex items-center justify-center rounded text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
           >
             <ZoomIn size={14} />
           </button>
-          <button
-            onClick={() => setZoom(100)}
-            className="w-7 h-7 flex items-center justify-center rounded text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors ml-1"
-          >
-            <Maximize2 size={12} />
-          </button>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] text-zinc-600">1080 × 1080 px</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] md:text-[11px] text-zinc-600 hidden xs:inline">1080 × 1080 px</span>
+          <button
+            onClick={handleShare}
+            disabled={exporting}
+            className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded bg-[#1877F2] hover:bg-[#166fe5] disabled:opacity-50 text-white text-[10px] md:text-xs font-medium transition-colors"
+          >
+            <Facebook size={12} className="md:w-[13px] md:h-[13px]" />
+            {exporting ? '...' : (
+              <span className="whitespace-nowrap">Facebook Share</span>
+            )}
+          </button>
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-2 px-4 py-1.5 rounded bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white text-[10px] md:text-xs font-medium transition-colors border border-zinc-700"
           >
-            <Download size={13} />
-            {exporting ? 'Exporting...' : 'Export PNG'}
+            <Download size={12} className="md:w-[13px] md:h-[13px]" />
+            {exporting ? '...' : (
+              <span className="whitespace-nowrap text-zinc-300">PNG</span>
+            )}
           </button>
         </div>
       </div>

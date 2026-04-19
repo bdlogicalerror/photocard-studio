@@ -1,0 +1,15 @@
+services:
+  photocard-studio:
+    container_name: photocard
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./exports:/app/public/exports
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
+      - PHOTOCARD_API_URL=http://127.0.0.1:3000/api/generate
+    restart: unless-stopped

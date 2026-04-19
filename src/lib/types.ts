@@ -46,6 +46,8 @@ export type TemplateStyle = {
   showBrandBar: boolean
   showAdBar: boolean
   adBarBg: string
+  showWatermark: boolean
+  watermarkOpacity: number
 }
 
 export type CardData = {
@@ -55,6 +57,8 @@ export type CardData = {
   handle: string
   website: string
   adText: string
+  watermarkText: string
+  source?: string
   photos: PhotoSlot[]
 }
 
@@ -78,15 +82,18 @@ export const DEFAULT_STYLE: TemplateStyle = {
   showBrandBar: true,
   showAdBar: false,
   adBarBg: '#f5f5f5',
+  showWatermark: true,
+  watermarkOpacity: 0.3,
 }
 
 export const DEFAULT_CARD_DATA: CardData = {
   headline: 'সবাই সংসদে গেলে আমার গাড়ির পিছনে দৌড়াবে কে?',
   subheadline: 'আবিদকে উদ্দেশ্য করে তারেক রহমান',
-  brandName: 'anwar tv',
-  handle: 'anwartvnews',
-  website: 'anwartv.news',
+  brandName: 'মুজিব বাহিনী',
+  handle: 'মুজিব বাহিনী',
+  website: 'মুজিব বাহিনী',
   adText: '',
+  watermarkText: 'মুজিব বাহিনী',
   photos: [
     { id: 'p1', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
     { id: 'p2', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },

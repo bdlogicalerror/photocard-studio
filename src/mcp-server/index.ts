@@ -23,7 +23,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "generate_photocard",
-        description: "Generate a custom photocard image using the Photocard Studio Next.js server.",
+        description: "Generate a custom photocard image. This tool returns the actual image data which MUST be displayed to the user in the chat.",
         inputSchema: {
           type: "object",
           properties: {
@@ -45,6 +45,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             website: {
               type: "string",
+            },
+            source: {
+              type: "string",
+              description: "Source attribution (e.g. 'Prothom Alo').",
             },
             photos: {
               type: "array",
@@ -73,32 +77,174 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 padding: { type: "number" },
                 showBrandBar: { type: "boolean" }
               }
+            },
+            permanent: {
+              type: "boolean",
+              description: "Whether to save the image permanently to the exports folder. Default is false (saves to tmp)."
             }
           },
           required: ["templateId", "headline"],
+        },
+      },
+      {
+        name: "fetch_latest_news",
+        description: "Fetch a list of recent news from Prothom Alo or BD24Live. The AI should analyze this list and pick/suggest the most interesting story to the user.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            source: {
+              type: "string",
+              enum: ["prothom-alo", "bd24live"],
+              description: "The news source to fetch from. Default is prothom-alo.",
+              default: "prothom-alo"
+            }
+          },
         },
       },
     ],
   };
 });
 
+import fs_sync from 'node:fs';
+import path from 'node:path';
+
+function debugLog(msg: string) {
+  try {
+    const logPath = '/app/mcp-debug.log';
+    const timestamp = new Date().toISOString();
+    fs_sync.appendFileSync(logPath, `[${timestamp}] ${msg}\n`);
+  } catch (e) {
+    // Ignore log errors
+  }
+}
+
+async function fetchProthomAlo() {
+  const rssUrl = "https://www.prothomalo.com/stories.rss";
+  debugLog("Fetching Prothom Alo news RSS...");
+  const response = await fetch(rssUrl);
+  if (!response.ok) throw new Error(`Failed to fetch Prothom Alo RSS: ${response.status}`);
+  const xml = await response.text();
+
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  const items = [];
+  let match;
+
+  while ((match = itemRegex.exec(xml)) !== null && items.length < 20) {
+    const entry = match[1];
+    const tMatch = entry.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) || entry.match(/<title>([\s\S]*?)<\/title>/);
+    const headline = tMatch ? tMatch[1].trim() : "Untitled";
+
+    const iMatch = entry.match(/<media:content[^>]+url=["']([^"']+)["']/i) || 
+                   entry.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i);
+    const imageUrl = iMatch ? iMatch[1].trim() : null;
+
+    const dMatch = entry.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+    const pubDate = dMatch ? dMatch[1].trim() : "";
+
+    items.push({ headline, imageUrl, pubDate });
+  }
+  return { sourceName: "Prothom Alo", items };
+}
+
+async function fetchBd24Live() {
+  const rssUrl = "https://www.bd24live.com/bangla/feed/";
+  debugLog("Fetching BD24Live news RSS...");
+  const response = await fetch(rssUrl);
+  if (!response.ok) throw new Error(`Failed to fetch BD24Live RSS: ${response.status}`);
+  const xml = await response.text();
+
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  const items = [];
+  let match;
+
+  while ((match = itemRegex.exec(xml)) !== null && items.length < 20) {
+    const entry = match[1];
+    const tMatch = entry.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) || entry.match(/<title>([\s\S]*?)<\/title>/);
+    const headline = tMatch ? tMatch[1].trim() : "Untitled";
+
+    // BD24Live specific image extraction (more robust)
+    const iMatch = entry.match(/<media:content[^>]+url=["']([^"']+)["']/i) || 
+                   entry.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i) ||
+                   entry.match(/<description>[\s\S]*?src=["']([^"']+)["']/i);
+    const imageUrl = iMatch ? iMatch[1].trim() : null;
+
+    const dMatch = entry.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+    const pubDate = dMatch ? dMatch[1].trim() : "";
+
+    items.push({ headline, imageUrl, pubDate });
+  }
+  return { sourceName: "BD24Live", items };
+}
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  console.error(`[MCP] Received tool request: ${String(request.params.name)}`);
+  debugLog(`Received tool request: ${String(request.params.name)}`);
+  
+  if (request.params.name === "fetch_latest_news") {
+    try {
+      const args = request.params.arguments as any;
+      const source = args.source || "prothom-alo";
+      
+      const { sourceName, items } = source === "bd24live" ? await fetchBd24Live() : await fetchProthomAlo();
+
+      if (items.length === 0) throw new Error(`No news entries found in ${sourceName} feed.`);
+
+      debugLog(`Fetched ${items.length} news items.`);
+
+      // Create a nice summary for the user
+      const newsListText = items.map((item, i) => 
+        `📰 NEWS #${i + 1}\n` +
+        `Title: ${item.headline}\n` +
+        `Image: ${item.imageUrl}\n` +
+        `Source: ${sourceName}\n` +
+        `Date: ${item.pubDate}`
+      ).join("\n\n-------------------\n\n");
+
+      const topItem = items[0];
+      const suggestedPrompt = `generate_photocard(
+  templateId: "single-news",
+  headline: "${topItem.headline}",
+  photos: ["${topItem.imageUrl}"],
+  source: "${sourceName}"
+)`;
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `📰 LATEST NEWS FROM ${sourceName.toUpperCase()}:\n\n${newsListText}`
+          },
+          {
+            type: "text",
+            text: `🤖 AI RECOMMENDATION:\nI have parsed the latest news. Here is a suggested prompt for the top story:\n\n${suggestedPrompt}`
+          }
+        ]
+      };
+    } catch (error: any) {
+      debugLog(`Error fetching news: ${error.message}`);
+      return {
+        content: [{ type: "text", text: `Error: ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
+
   if (request.params.name !== "generate_photocard") {
     throw new Error(`Unknown tool: ${String(request.params.name)}`);
   }
 
-  const args = request.params.arguments as any;
-  const {
-    templateId,
-    headline,
-    subheadline = "",
-    brandName = "anwar tv",
-    handle = "anwartvnews",
-    website = "anwartv.news",
-    photos = [],
-    styleOverrides = {}
-  } = args;
+    const args = request.params.arguments as any;
+    const {
+      templateId,
+      headline,
+      subheadline = "",
+      brandName = "Kurigram City",
+      handle = "Kurigram City",
+      website = "Kurigram City",
+      source = "",
+      photos = [],
+      styleOverrides = {},
+      permanent = false
+    } = args;
 
   const photoSlots = [];
   for (let i = 0; i < 3; i++) {
@@ -111,26 +257,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
      });
   }
 
-  const cardData = {
-    headline,
-    subheadline,
-    brandName,
-    handle,
-    website,
-    adText: "",
-    photos: photoSlots
-  };
+    const cardData = {
+      headline,
+      subheadline,
+      brandName,
+      handle,
+      website,
+      source,
+      adText: "",
+      photos: photoSlots
+    };
 
-  console.error(`[MCP] Active Template: ${templateId}`);
-  console.error(`[MCP] Headline: "${headline}"`);
-  console.error(`[MCP] Photos provided: ${photoSlots.filter(p => !!p.src).length}`);
-  if (Object.keys(styleOverrides).length > 0) {
-    console.error(`[MCP] Detected Style Overrides: ${JSON.stringify(Object.keys(styleOverrides))}`);
-  }
+  debugLog(`Active Template: ${templateId}`);
 
   try {
     const photocardEndpoint = process.env.PHOTOCARD_API_URL || 'http://127.0.0.1:3000/api/generate';
-    console.error(`[MCP] Routing to internal Puppeteer Renderer at ${photocardEndpoint}...`);
+    debugLog(`Routing to internal Puppeteer Renderer at ${photocardEndpoint}...`);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
 
@@ -139,7 +281,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ cardData, templateId, styleOverrides }),
+      body: JSON.stringify({ cardData, templateId, styleOverrides, permanent }),
       signal: controller.signal
     });
 
@@ -147,14 +289,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[MCP] INTERNAL FETCH ERROR: HTTP ${response.status} - ${errorText}`);
+      debugLog(`INTERNAL FETCH ERROR: HTTP ${response.status} - ${errorText}`);
       throw new Error(`API error HTTP ${response.status}: ${errorText}`);
     }
 
-    const buffer = await response.arrayBuffer();
-    const base64Image = Buffer.from(buffer).toString('base64');
+    const responseData = await response.json();
+    const base64Image = responseData.data;
+    const filename = responseData.filename;
+    const previewPath = responseData.url;
     
-    console.error(`[MCP] SUCCESS! Photocard rendering complete (${base64Image.length} bytes base64). Delivering payload to OpenClaw...`);
+    const baseUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
+    const imageUrl = `${baseUrl}${previewPath}`;
+
+    debugLog(`SUCCESS! Photocard rendering complete. URL: ${imageUrl}`);
 
     return {
       content: [
@@ -165,12 +312,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         },
         {
           type: "text",
-          text: `Successfully generated photocard with template '${templateId}'.`,
+          text: `✅ Photocard generated successfully!\n\n🌐 Shareable Network Link: ${imageUrl}\n📂 Path: ${permanent ? './exports/' : './tmp/'}${filename}`,
         }
       ],
     };
   } catch (err: any) {
-    console.error(`[MCP] CRITICAL EXCEPTION CAUGHT: ${err.message}`);
+    debugLog(`CRITICAL EXCEPTION CAUGHT: ${err.message}`);
     return {
       content: [
         {
@@ -186,10 +333,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Photocard Studio MCP Server running on stdio");
 }
 
 main().catch((error) => {
-  console.error("MCP Server Server error:", error);
+  debugLog(`MCP Server Runtime error: ${error.message}`);
   process.exit(1);
 });

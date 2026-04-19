@@ -90,7 +90,7 @@ function PhotoUploader({ idx, label }: { idx: number; label: string }) {
       >
         {photo?.src ? (
           <>
-            <img src={photo.src} alt="" className="w-full h-full object-cover" />
+            <img src={photo.src} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
               <Upload size={16} className="text-white" />
             </div>
@@ -107,7 +107,8 @@ function PhotoUploader({ idx, label }: { idx: number; label: string }) {
         type="text"
         placeholder="Or paste image URL..."
         className={inputCls}
-        onBlur={e => { if (e.target.value) { updatePhoto(idx, { src: e.target.value }); e.target.value = '' } }}
+        value={photo?.src?.startsWith('http') ? photo.src : ''}
+        onChange={e => updatePhoto(idx, { src: e.target.value })}
       />
       {photo?.src && (
         <div className="flex gap-2">
@@ -122,9 +123,9 @@ function PhotoUploader({ idx, label }: { idx: number; label: string }) {
               <option value="fill">Fill</option>
             </select>
           </Field>
-          <Field label={`Scale: ${photo.scale.toFixed(1)}`}>
+          <Field label={`Scale: ${(photo.scale ?? 1).toFixed(1)}`}>
             <input
-              type="range" min="0.5" max="2" step="0.1" value={photo.scale}
+              type="range" min="0.5" max="2" step="0.1" value={photo.scale ?? 1}
               onChange={e => updatePhoto(idx, { scale: Number(e.target.value) })}
               className="w-full accent-red-500 mt-1"
             />
@@ -141,9 +142,9 @@ export default function EditorPanel() {
   const style = template.style
 
   return (
-    <div className="w-full md:w-72 flex-shrink-0 bg-zinc-950 border-r border-zinc-800 overflow-y-auto flex flex-col h-full pb-10">
-      <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between sticky top-0 bg-zinc-950 z-10">
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Edit Card</span>
+    <div className="w-full md:w-72 flex-shrink-0 bg-zinc-950 border-r border-zinc-800 overflow-y-auto flex flex-col h-full pb-20 md:pb-10">
+      <div className="px-4 py-2 md:py-3 border-b border-zinc-800 flex items-center justify-between sticky top-0 bg-zinc-950 z-10">
+        <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-zinc-400">Edit Card</span>
         <button
           onClick={resetCardData}
           className="flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
@@ -152,7 +153,7 @@ export default function EditorPanel() {
         </button>
       </div>
 
-      <div className="p-4 flex flex-col gap-0">
+      <div className="p-4 flex flex-col gap-0 pb-24 md:pb-0">
 
         <Section title="Photos">
           {Array.from({ length: template.photoCount }).map((_, i) => (
@@ -185,6 +186,9 @@ export default function EditorPanel() {
           <Field label="Website">
             <input type="text" value={cardData.website} onChange={e => updateCardData({ website: e.target.value })} className={inputCls} />
           </Field>
+          <Field label="News Source">
+            <input type="text" value={cardData.source || ''} onChange={e => updateCardData({ source: e.target.value })} className={inputCls} placeholder="e.g. Prothom Alo" />
+          </Field>
           <Field label="Show brand bar">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -196,6 +200,34 @@ export default function EditorPanel() {
               <span className="text-xs text-zinc-400">Visible</span>
             </label>
           </Field>
+        </Section>
+
+        <Section title="Watermark">
+          <Field label="Watermark Text">
+            <input type="text" value={cardData.watermarkText ?? ''} onChange={e => updateCardData({ watermarkText: e.target.value })} className={inputCls} />
+          </Field>
+          <div className="flex gap-4">
+            <Field label="Show">
+              <label className="flex items-center h-full gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={style.showWatermark ?? false}
+                  onChange={e => updateStyle({ showWatermark: e.target.checked })}
+                  className="accent-red-500"
+                />
+                <span className="text-xs text-zinc-500">Enable</span>
+              </label>
+            </Field>
+            <div className="flex-1">
+              <Field label={`Opacity: ${(style.watermarkOpacity ?? 0.3).toFixed(2)}`}>
+                <input
+                  type="range" min="0" max="1" step="0.05" value={style.watermarkOpacity ?? 0.3}
+                  onChange={e => updateStyle({ watermarkOpacity: Number(e.target.value) })}
+                  className="w-full accent-red-500 mt-1"
+                />
+              </Field>
+            </div>
+          </div>
         </Section>
 
         <Section title="Colors">

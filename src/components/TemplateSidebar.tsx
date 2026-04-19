@@ -120,9 +120,9 @@ export default function TemplateSidebar() {
   }
 
   return (
-    <aside className="w-full md:w-56 flex-shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col h-full overflow-hidden">
-      <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Templates</span>
+    <aside className="w-full md:w-56 flex-shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col h-full overflow-hidden pb-16 md:pb-0">
+      <div className="px-4 py-2 md:py-3 border-b border-zinc-800 flex items-center justify-between">
+        <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-zinc-400">Templates</span>
         <button
           onClick={() => setShowNewForm(!showNewForm)}
           className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"

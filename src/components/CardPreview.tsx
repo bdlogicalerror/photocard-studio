@@ -30,6 +30,7 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
         <img
           src={src}
           alt=""
+          crossOrigin="anonymous"
           style={{
             width: '100%', height: '100%',
             objectFit: objectFit as any,
@@ -57,7 +58,7 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
   )
 }
 
-function BrandBar({ style, brandName = '', handle, website }: { style: Template['style'], brandName?: string, handle?: string, website?: string }) {
+function BrandBar({ style, brandName = '', handle, website, source }: { style: Template['style'], brandName?: string, handle?: string, website?: string, source?: string }) {
   if (!style.showBrandBar) return null
   const parts = (brandName || '').trim().split(' ')
   return (
@@ -65,6 +66,7 @@ function BrandBar({ style, brandName = '', handle, website }: { style: Template[
       background: style.brandBarBg,
       display: 'flex', alignItems: 'center', gap: '1.2cqw',
       padding: '2% 4%', flexShrink: 0,
+      position: 'relative'
     }}>
       <span style={{
         fontFamily: "'Playfair Display', serif",
@@ -84,6 +86,21 @@ function BrandBar({ style, brandName = '', handle, website }: { style: Template[
         <span style={{ fontSize: '1.3cqw', color: 'rgba(255,255,255,0.65)', fontFamily: 'sans-serif' }}>
           📱 {handle}
         </span>
+      )}
+      {source && (
+        <div style={{ 
+          marginLeft: 'auto',
+          background: style.accentColor,
+          color: '#fff',
+          fontSize: '1.1cqw',
+          fontWeight: 700,
+          padding: '0.4cqw 1cqw',
+          borderRadius: '0.4cqw',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05cqw'
+        }}>
+          SOURCE: {source}
+        </div>
       )}
     </div>
   )
@@ -130,6 +147,11 @@ export default function CardPreview({ template, cardData, forExport = false }: P
     <div style={{ height: `calc(${style.accentBarHeight / 8}cqw)`, background: style.accentColor, flexShrink: 0 }} />
   )
 
+  const [dateStr, setDateStr] = React.useState<string>('')
+  React.useEffect(() => {
+    setDateStr(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }))
+  }, [])
+
   const renderLayout = () => {
     switch (layout) {
       case 'dual-top':
@@ -141,7 +163,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
               <PhotoSlot {...(p[1] || {})} placeholder="Photo 2" />
             </div>
             <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} />
-            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>
         )
@@ -154,7 +176,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
               <PhotoSlot {...(p[0] || {})} placeholder="Photo" />
             </div>
             <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} />
-            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>
         )
@@ -167,7 +189,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
             <div style={{ flex: '0 0 55%', minHeight: 0, overflow: 'hidden' }}>
               <PhotoSlot {...(p[0] || {})} placeholder="Photo" />
             </div>
-            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>
         )
@@ -202,7 +224,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
                   opacity: 0.9
                 }}>{cardData.subheadline || ''}</p>
               )}
-              <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} />
+              <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             </div>
             {style.accentBarPosition !== 'none' && (
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: `calc(${style.accentBarHeight / 8}cqw)`, background: style.accentColor }} />
@@ -234,7 +256,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
                 )}
               </div>
             </div>
-            <BrandBar style={style} brandName={cardData.brandName} handle={cardData.handle} website={cardData.website} />
+            <BrandBar style={style} brandName={cardData.brandName} handle={cardData.handle} website={cardData.website} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>
         )
@@ -263,7 +285,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
                 <PhotoSlot {...(p[0] || {})} placeholder="Photo" />
               </div>
             </div>
-            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>
         )
@@ -280,7 +302,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
               <PhotoSlot {...(p[2] || {})} placeholder="Photo 3" />
             </div>
             <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} />
-            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>
         )
@@ -307,15 +329,39 @@ export default function CardPreview({ template, cardData, forExport = false }: P
       }}
     >
       {renderLayout()}
+      {style.showWatermark && cardData.watermarkText && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotate(-30deg)',
+          fontSize: '10cqw',
+          fontWeight: 900,
+          color: 'rgba(255,255,255,1)',
+          opacity: style.watermarkOpacity,
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+          zIndex: 5,
+          fontFamily: fontMap[style.fontFamily],
+          textTransform: 'uppercase',
+          letterSpacing: '0.4cqw',
+        }}>
+          {cardData.watermarkText}
+        </div>
+      )}
+
       <div style={{
-        position: 'absolute', top: '2.5cqw', right: '2.5cqw',
-        background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.5cqw 1.2cqw',
-        borderRadius: `calc(${Math.max(4, style.borderRadius - 4) / 8}cqw)`, 
-        fontSize: `calc(${(style.subheadlineFontSize * 0.5) / 8}cqw)`,
+        position: 'absolute', top: '2cqw', left: '2cqw',
+        background: 'rgba(0,0,0,0.55)', color: '#fff', padding: '0.4cqw 1cqw',
+        borderRadius: '0.4cqw',
+        fontSize: '1.2cqw',
+        fontWeight: 600,
         fontFamily: 'sans-serif', zIndex: 10,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        backdropFilter: 'blur(4px)',
+        border: '0.1cqw solid rgba(255,255,255,0.1)'
       }}>
-        {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+        {dateStr}
       </div>
     </div>
   )

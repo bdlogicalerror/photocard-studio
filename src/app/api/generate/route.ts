@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
 import puppeteer from 'puppeteer'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import os from 'node:os'
+import { v4 as uuidv4 } from 'uuid'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
   let browser
   try {
-    const { cardData, templateId, styleOverrides } = await request.json()
+    const { cardData, templateId, styleOverrides, permanent = false } = await request.json()
     if (!cardData || !templateId) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
@@ -20,14 +24,22 @@ export async function POST(request: Request) {
     browser = await puppeteer.launch({
       executablePath,
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--hide-scrollbars'
+      ],
     })
 
     const page = await browser.newPage()
     
     // Next.js runs on this port
     const port = process.env.PORT || 3000
-    const targetUrl = `http://localhost:${port}/render?data=${encodeURIComponent(dataBase64)}&templateId=${templateId}&style=${encodeURIComponent(styleBase64)}`
+    // Use 127.0.0.1 for more reliable internal container networking
+    const targetUrl = `http://127.0.0.1:${port}/render?data=${encodeURIComponent(dataBase64)}&templateId=${templateId}&style=${encodeURIComponent(styleBase64)}`
     
     await page.setViewport({ width: 1080, height: 1080, deviceScaleFactor: 3 })
     await page.goto(targetUrl, { waitUntil: 'networkidle0' })
@@ -39,10 +51,35 @@ export async function POST(request: Request) {
 
     const screenshotBuffer = await element.screenshot()
 
-    return new Response(screenshotBuffer as any, {
+    const filename = `${uuidv4()}.png`
+    let filePath: string
+    let previewUrl: string
+
+    if (permanent) {
+      const exportDist = path.join(process.cwd(), 'public', 'exports')
+      try {
+        await fs.mkdir(exportDist, { recursive: true })
+      } catch (e) {}
+      filePath = path.join(exportDist, filename)
+      previewUrl = `/exports/${filename}`
+    } else {
+      const tmpDir = os.tmpdir()
+      filePath = path.join(tmpDir, filename)
+      previewUrl = `/api/tmp/${filename}`
+    }
+
+    console.log(`Writing photocard to: ${filePath}`)
+    await fs.writeFile(filePath, screenshotBuffer as any)
+
+    return NextResponse.json({ 
+      success: true, 
+      filename,
+      url: previewUrl,
+      data: Buffer.from(screenshotBuffer as any).toString('base64')
+    }, {
       status: 200,
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'application/json',
       },
     })
   } catch (error: any) {
