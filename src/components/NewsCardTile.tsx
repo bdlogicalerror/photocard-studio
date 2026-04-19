@@ -224,7 +224,7 @@ export default function NewsCardTile({ headline, imageUrl, articleUrl, source = 
 
   const handleEditInStudio = () => {
     const proxiedImage = imageUrl
-      ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
+      ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}&t=${Date.now()}`
       : null
 
     const templateId = getDynamicTemplate(headline)

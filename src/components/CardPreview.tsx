@@ -1,6 +1,6 @@
 // src/components/CardPreview.tsx
 'use client'
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { Template, CardData } from '@/lib/types'
 import clsx from 'clsx'
 
@@ -95,22 +95,27 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', background: '#2a2a2a' }}>
       {src ? (
-        <div
+        <img
+          src={src}
+          alt={placeholder}
+          crossOrigin="anonymous"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: objectFit as any,
+            objectPosition,
+            transform: `scale(${scale})`,
+            transformOrigin: 'center',
+            cursor: isInteractive && objectFit === 'cover' ? 'move' : 'default',
+            touchAction: 'none',
+            display: 'block'
+          }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onWheel={handleWheel}
-          style={{
-            width: '100%', height: '100%',
-            backgroundImage: `url(${src})`,
-            backgroundSize: bgSizeMap[objectFit] || 'cover',
-            backgroundPosition: objectPosition,
-            backgroundRepeat: 'no-repeat',
-            transform: `scale(${scale})`,
-            transformOrigin: 'center',
-            cursor: isInteractive && objectFit === 'cover' ? 'move' : 'default',
-            touchAction: 'none'
-          }}
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
         />
       ) : (
         <div style={{
@@ -263,15 +268,23 @@ function BlurBox({ id, x, y, width, height }: { id: string, x: number, y: number
         width: `${width}%`,
         height: `${height}%`,
         backdropFilter: 'blur(16px)',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        border: isInteractive ? '1px solid rgba(255,255,255,0.5)' : 'none',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        boxShadow: isInteractive ? '0 0 10px rgba(0,0,0,0.2)' : 'none',
+        border: isInteractive ? '2px solid rgba(255,255,255,0.8)' : 'none',
+        outline: isInteractive ? '1px solid rgba(0,0,0,0.3)' : 'none',
         cursor: isInteractive ? 'move' : 'default',
-        zIndex: 4,
+        zIndex: 50,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        overflow: 'visible'
       }}
     >
+      {/* Fallback for html2canvas which doesn't support backdrop-filter */}
+      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: -1 }}>
+        <rect width="100%" height="100%" fill="rgba(255,255,255,0.4)" filter="url(#svgBlurFilter)" />
+      </svg>
+
       {isInteractive && (
         <>
           <button 
@@ -290,10 +303,21 @@ function BlurBox({ id, x, y, width, height }: { id: string, x: number, y: number
   )
 }
 
-export default function CardPreview({ template, cardData, forExport = false, onPhotoChange, onBlurChange, onBlurRemove }: Props) {
+const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardData, forExport = false, onPhotoChange, onBlurChange, onBlurRemove }, ref) => {
   const { style, layout, photoCount } = template
   const p = cardData.photos || []
   const blurRegions = cardData.blurRegions || []
+
+  // Global SVG filter for html2canvas compatibility
+  const BlurFilters = () => (
+    <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+      <defs>
+        <filter id="svgBlurFilter">
+          <feGaussianBlur stdDeviation="12" />
+        </filter>
+      </defs>
+    </svg>
+  )
 
   // Wrap layouts to include blur regions
   const withBlurs = (children: React.ReactNode) => (
@@ -620,7 +644,7 @@ export default function CardPreview({ template, cardData, forExport = false, onP
 
   return (
     <div
-      id="card-preview"
+      ref={ref}
       style={{
         width: '100%',
         aspectRatio: '1 / 1',
@@ -640,6 +664,7 @@ export default function CardPreview({ template, cardData, forExport = false, onP
         onBlurChange: onBlurChange || (() => {}),
         onBlurRemove: onBlurRemove || (() => {})
       }}>
+        <BlurFilters />
         {withBlurs(renderLayout())}
       </InteractionContext.Provider>
       {style.showWatermark && cardData.watermarkText && (
@@ -679,4 +704,7 @@ export default function CardPreview({ template, cardData, forExport = false, onP
       </div>
     </div>
   )
-}
+})
+
+CardPreview.displayName = 'CardPreview'
+export default CardPreview

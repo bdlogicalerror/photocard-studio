@@ -116,8 +116,20 @@ function PhotoUploader({ idx, label }: { idx: number; label: string }) {
         type="text"
         placeholder="Or paste image URL..."
         className={inputCls}
-        value={photo?.src?.startsWith('http') ? photo.src : ''}
-        onChange={e => updatePhoto(idx, { src: e.target.value })}
+        value={photo?.src?.startsWith('http') ? (photo.src.includes('proxy-image?url=') ? decodeURIComponent(photo.src.split('url=')[1]) : photo.src) : ''}
+        onChange={e => {
+          const url = e.target.value.trim()
+          if (!url) {
+            updatePhoto(idx, { src: null })
+            return
+          }
+          if (url.startsWith('http')) {
+            const proxied = `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}`
+            updatePhoto(idx, { src: proxied })
+          } else {
+            updatePhoto(idx, { src: url })
+          }
+        }}
       />
       {photo?.src && (
         <div className="flex gap-2">
