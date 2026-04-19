@@ -6,7 +6,7 @@ import CardPreview from './CardPreview'
 import { Download, ZoomIn, ZoomOut, Maximize2, Facebook, Share2 } from 'lucide-react'
 
 export default function PreviewCanvas() {
-  const { cardData } = useStore()
+  const { cardData, updatePhotoById } = useStore()
   const template = useActiveTemplate()
   const [exporting, setExporting] = useState(false)
   const [zoom, setZoom] = useState(100)
@@ -131,7 +131,11 @@ export default function PreviewCanvas() {
             transition: 'width 0.2s',
           }}
         >
-          <CardPreview template={template} cardData={cardData} />
+          <CardPreview 
+            template={template} 
+            cardData={cardData} 
+            onPhotoPositionChange={(id, pos) => updatePhotoById(id, { objectPosition: pos })}
+          />
         </div>
       </div>
 

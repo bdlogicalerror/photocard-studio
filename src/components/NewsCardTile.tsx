@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Download, Share2, Loader2, CheckCircle2, AlertCircle, Save, Copy, Pencil } from 'lucide-react'
 import { useStore } from '@/store/useStore'
+import { useGalleryStore, GalleryCardState } from '@/store/useGalleryStore'
 import { useRouter } from 'next/navigation'
+import { BUILT_IN_TEMPLATES } from '@/lib/types'
 
 interface NewsCardTileProps {
   headline: string
@@ -15,13 +17,27 @@ interface NewsCardTileProps {
 }
 
 export default function NewsCardTile({ headline, imageUrl, source = 'News', index, shouldStart, onComplete }: NewsCardTileProps) {
-  const [status, setStatus] = useState<'pending' | 'generating' | 'success' | 'error'>('pending')
-  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
-  const [filename, setFilename] = useState<string | null>(null)
-  const [isSaved, setIsSaved] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isCopying, setIsCopying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { cardStates, updateCardState } = useGalleryStore()
+  const uniqueKey = `${source}-${index}`
+  const state: GalleryCardState = cardStates[uniqueKey] || {
+    status: 'pending',
+    generatedImageUrl: null,
+    filename: null,
+    isSaved: false,
+    isSaving: false,
+    isCopying: false,
+    error: null
+  }
+  const { status, templateId: savedTemplateId, generatedImageUrl, filename, isSaved, isSaving, isCopying, error } = state
+
+  const setStatus = (v: any) => updateCardState(uniqueKey, { status: v })
+  const setSelectedTemplateId = (v: any) => updateCardState(uniqueKey, { templateId: v })
+  const setGeneratedImageUrl = (v: any) => updateCardState(uniqueKey, { generatedImageUrl: v })
+  const setFilename = (v: any) => updateCardState(uniqueKey, { filename: v })
+  const setIsSaved = (v: any) => updateCardState(uniqueKey, { isSaved: v })
+  const setIsSaving = (v: any) => updateCardState(uniqueKey, { isSaving: v })
+  const setIsCopying = (v: any) => updateCardState(uniqueKey, { isCopying: v })
+  const setError = (v: any) => updateCardState(uniqueKey, { error: v })
 
   const updateCardData = useStore(s => s.updateCardData)
   const setActiveTemplate = useStore(s => s.setActiveTemplate)
@@ -35,23 +51,39 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
 
   const getDynamicTemplate = (text: string) => {
     const len = text.length
-    if (text.includes('ব্রেকিং') || text.includes('নিহত') || text.includes('হামলা') || text.includes('গ্রেপ্তার') || text.includes('মামলা') || text.includes('আগুন')) {
+    
+    // Breaking News: accidents, crime, urgency
+    if (text.includes('ব্রেকিং') || text.includes('নিহত') || text.includes('হামলা') || text.includes('গ্রেপ্তার') || text.includes('মামলা') || text.includes('আগুন') || text.includes('আটক') || text.includes('মৃত্যু') || text.includes('বিস্ফোরণ') || text.includes('অভিযান') || text.includes('উদ্ধার')) {
       return 'breaking-ribbon'
     }
+    
+    // versus-clash: rivalry, matches
+    if (text.includes('বনাম') || text.includes('লড়াই') || text.includes('মুখোমুখি') || text.includes('দ্বন্দ্ব')) {
+      return 'versus-clash'
+    }
+
+    // poll-vote: questions
+    if (text.includes('কেমন') || text.includes('কেন') || text.includes('কীভাবে') || text.includes('?') || text.includes('কী ')) {
+      return 'poll-vote'
+    }
+
+    // quote-spotlight: statements, quotes, logic
     if (
       len > 90 || 
       text.includes('‘') || text.includes('’') || text.includes('"') || text.includes("'") ||
-      text.includes('বলেছেন') || text.includes('বললেন') || text.includes('জানিয়েছেন') || text.includes('জানান')
+      text.includes('বলেছেন') || text.includes('বললেন') || text.includes('জানিয়েছেন') || text.includes('জানান') || text.includes('দাবি') || text.includes('আহ্বান') || text.includes('মন্তব্য')
     ) {
       return 'quote-spotlight'
     }
+    
+    // Fallback based on length
     if (len < 40) {
       return 'full-overlay'
     }
     return 'single-news'
   }
 
-  const generateCard = async () => {
+  const generateCard = async (forceTemplateId?: string) => {
     setStatus('generating')
     try {
       // Proxy the image through our server to avoid CORS issues with external news sites
@@ -59,7 +91,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
         ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
         : null
         
-      const templateId = getDynamicTemplate(headline)
+      const templateId = forceTemplateId || savedTemplateId || getDynamicTemplate(headline)
 
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -71,12 +103,17 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
             brandName: 'Kurigram City',
             handle: 'Kurigram City',
             website: 'Kurigram City',
+            watermarkText: 'Kurigram City',
             source,
             photos: [
               { id: 'p1', src: proxiedImage, objectPosition: 'center', objectFit: 'cover', scale: 1 }
             ]
           },
-          templateId
+          templateId,
+          styleOverrides: {
+            showWatermark: true,
+            watermarkOpacity: 0.15
+          }
         })
       })
 
@@ -199,6 +236,26 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
   return (
     <div className="group relative bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden transition-all hover:border-zinc-700">
       <div className="aspect-square relative bg-zinc-950 flex items-center justify-center">
+        {status === 'success' && (
+          <div className="absolute top-2 left-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+            <select
+              className="bg-black/70 text-white text-[10px] rounded px-2 py-1.5 border border-zinc-700 outline-none backdrop-blur-sm cursor-pointer hover:bg-black uppercase font-bold tracking-wider"
+              value={savedTemplateId || getDynamicTemplate(headline)}
+              onChange={(e) => {
+                 const newId = e.target.value
+                 setSelectedTemplateId(newId)
+                 generateCard(newId)
+              }}
+            >
+              <optgroup label="Select Layout">
+                {BUILT_IN_TEMPLATES.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+        )}
+
         {status === 'pending' && (
           <div className="text-center p-6 space-y-2">
             <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center mx-auto text-zinc-700">

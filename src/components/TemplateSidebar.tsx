@@ -145,8 +145,10 @@ function LayoutThumb({ layout }: { layout: TemplateLayout }) {
 }
 
 export default function TemplateSidebar() {
-  const { templates, activeTemplateId, setActiveTemplate, duplicateTemplate, deleteTemplate, renameTemplate, addTemplate } = useStore()
+  const { templates, activeTemplateId, setActiveTemplate, duplicateTemplate, deleteTemplate, renameTemplate, addTemplate, _hasHydrated } = useStore()
   const [editingId, setEditingId] = useState<string | null>(null)
+
+  if (!_hasHydrated) return <div className="p-8 text-center text-zinc-500 text-xs animate-pulse">Loading templates...</div>
   const [editName, setEditName] = useState('')
   const [showNewForm, setShowNewForm] = useState(false)
   const [newName, setNewName] = useState('')

@@ -13,11 +13,12 @@ fi
 case "$1" in
     start)
         echo "✅ Detected local IP: $LOCAL_IP"
-        echo "🚀 Starting Photocard Studio (Daemon) at $PUBLIC_URL"
+        echo "🚀 Starting Photocard Studio & Cloudflare Tunnel (Daemon)"
+        echo "🌍 Local: $PUBLIC_URL"
         docker-compose up -d --build
         ;;
     stop)
-        echo "🛑 Stopping Photocard Studio..."
+        echo "🛑 Stopping Photocard Studio & Tunnel..."
         docker-compose down
         ;;
     restart)
@@ -29,7 +30,8 @@ case "$1" in
         ;;
     *)
         echo "✅ Detected local IP: $LOCAL_IP"
-        echo "🚀 Starting Photocard Studio (Foreground) at $PUBLIC_URL"
+        echo "🚀 Starting Photocard Studio & Cloudflare Tunnel (Foreground)"
+        echo "🌍 Local: $PUBLIC_URL"
         echo "Usage: ./start.sh [start|stop|restart|logs]"
         echo "------------------------------------------------"
         docker-compose up --build

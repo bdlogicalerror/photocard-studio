@@ -8,6 +8,7 @@ type Props = {
   template: Template
   cardData: CardData
   forExport?: boolean
+  onPhotoPositionChange?: (id: string, pos: string) => void
 }
 
 const fontMap: Record<string, string> = {
@@ -17,19 +18,68 @@ const fontMap: Record<string, string> = {
   sans: "system-ui, sans-serif",
 }
 
-function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale = 1, placeholder }: {
+const DragContext = React.createContext({
+  isInteractive: false,
+  onPositionChange: (id: string, pos: string) => {}
+})
+
+function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale = 1, placeholder, id }: {
   src?: string | null
   objectFit?: string
   objectPosition?: string
   scale?: number
   placeholder: string
+  id?: string
 }) {
+  const { isInteractive, onPositionChange } = React.useContext(DragContext)
+  const isDragging = React.useRef(false)
+  const startMouse = React.useRef({ x: 0, y: 0 })
+
+  const getInitialPos = () => {
+    if (!objectPosition || objectPosition === 'center') return { x: 50, y: 50 }
+    const match = objectPosition.match(/(-?[\d.]+)%\s+(-?[\d.]+)%/)
+    if (match) return { x: parseFloat(match[1]), y: parseFloat(match[2]) }
+    return { x: 50, y: 50 }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLImageElement>) => {
+    if (!isInteractive || !src || objectFit !== 'cover') return
+    e.currentTarget.setPointerCapture(e.pointerId)
+    isDragging.current = true
+    startMouse.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLImageElement>) => {
+    if (!isDragging.current) return
+    const dx = e.clientX - startMouse.current.x
+    const dy = e.clientY - startMouse.current.y
+    startMouse.current = { x: e.clientX, y: e.clientY }
+
+    const cur = getInitialPos()
+    const factor = 0.5 / scale 
+    const newX = Math.max(0, Math.min(100, cur.x - dx * factor))
+    const newY = Math.max(0, Math.min(100, cur.y - dy * factor))
+
+    if (id) {
+      onPositionChange(id, `${newX.toFixed(1)}% ${newY.toFixed(1)}%`)
+    }
+  }
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLImageElement>) => {
+    if (!isDragging.current) return
+    isDragging.current = false
+    e.currentTarget.releasePointerCapture(e.pointerId)
+  }
+
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', background: '#2a2a2a' }}>
       {src ? (
         <img
           src={src}
           alt=""
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
           style={{
             width: '100%', height: '100%',
             objectFit: objectFit as any,
@@ -37,6 +87,8 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
             transform: `scale(${scale})`,
             transformOrigin: 'center',
             display: 'block',
+            cursor: isInteractive && objectFit === 'cover' ? 'move' : 'default',
+            touchAction: 'none'
           }}
         />
       ) : (
@@ -138,7 +190,7 @@ function HeadlineBlock({ style, headline, subheadline, flex }: {
   )
 }
 
-export default function CardPreview({ template, cardData, forExport = false }: Props) {
+export default function CardPreview({ template, cardData, forExport = false, onPhotoPositionChange }: Props) {
   const { style, layout, photoCount } = template
   const p = cardData.photos || []
 
@@ -473,7 +525,9 @@ export default function CardPreview({ template, cardData, forExport = false }: P
         containerType: 'inline-size',
       }}
     >
-      {renderLayout()}
+      <DragContext.Provider value={{ isInteractive: !!onPhotoPositionChange, onPositionChange: onPhotoPositionChange || (() => {}) }}>
+        {renderLayout()}
+      </DragContext.Provider>
       {style.showWatermark && cardData.watermarkText && (
         <div style={{
           position: 'absolute',
@@ -484,6 +538,7 @@ export default function CardPreview({ template, cardData, forExport = false }: P
           fontWeight: 900,
           color: 'rgba(255,255,255,1)',
           opacity: style.watermarkOpacity,
+          mixBlendMode: 'overlay',
           whiteSpace: 'nowrap',
           pointerEvents: 'none',
           zIndex: 5,

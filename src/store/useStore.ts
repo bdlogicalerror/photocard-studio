@@ -15,12 +15,15 @@ type Store = {
   setActiveTemplate: (id: string) => void
   updateCardData: (patch: Partial<CardData>) => void
   updatePhoto: (idx: number, patch: Partial<PhotoSlot>) => void
+  updatePhotoById: (id: string, patch: Partial<PhotoSlot>) => void
   updateStyle: (patch: Partial<TemplateStyle>) => void
   addTemplate: (t: Omit<Template, 'id'>) => void
   duplicateTemplate: (id: string) => void
   deleteTemplate: (id: string) => void
   renameTemplate: (id: string, name: string) => void
   resetCardData: () => void
+  _hasHydrated: boolean
+  setHasHydrated: (v: boolean) => void
 }
 
 export const useStore = create<Store>()(
@@ -39,6 +42,14 @@ export const useStore = create<Store>()(
         set(s => {
           const photos = [...s.cardData.photos]
           photos[idx] = { ...photos[idx], ...patch }
+          return { cardData: { ...s.cardData, photos } }
+        }),
+
+      updatePhotoById: (id, patch) =>
+        set(s => {
+          const photos = [...s.cardData.photos]
+          const idx = photos.findIndex(p => p.id === id)
+          if (idx !== -1) photos[idx] = { ...photos[idx], ...patch }
           return { cardData: { ...s.cardData, photos } }
         }),
 
@@ -86,14 +97,30 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'photocard-studio-v1',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
       merge: (persistedState: any, currentState: Store) => {
-        // Ensure new BUILT_IN_TEMPLATES are always included, preserving custom user templates
-        const parsed = persistedState as Store
-        const customTemplates = (parsed?.templates || []).filter((t: Template) => !t.isBuiltIn)
+        if (!persistedState) return currentState
+        
+        const parsed = persistedState as Partial<Store>
+        const customTemplates = (parsed.templates || []).filter((t: Template) => !t.isBuiltIn)
+        
+        // Ensure any new built-in templates are added if they were missing in old localstorage
+        const templates = [...BUILT_IN_TEMPLATES]
+        
+        // Only add custom ones that don't collide by ID
+        customTemplates.forEach(ct => {
+          if (!templates.find(t => t.id === ct.id)) {
+            templates.push(ct)
+          }
+        })
+
         return {
           ...currentState,
           ...parsed,
-          templates: [...BUILT_IN_TEMPLATES, ...customTemplates],
+          templates,
+          _hasHydrated: true // It's hydrated now
         }
       }
     }

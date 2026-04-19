@@ -3,22 +3,29 @@
 import { useState, useEffect } from 'react'
 import NewsCardTile from '@/components/NewsCardTile'
 import { Newspaper, RefreshCcw, Loader2 } from 'lucide-react'
+import { useGalleryStore } from '@/store/useGalleryStore'
 
 export default function ProthomAloGallery() {
-  const [news, setNews] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const { prothomAlo, updateSource } = useGalleryStore()
+  const { news, currentIndex, hasFetched } = prothomAlo
+
+  const [loading, setLoading] = useState(!hasFetched)
   const [error, setError] = useState<string | null>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
 
   const fetchNews = async () => {
+    if (hasFetched && news.length > 0) {
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
-    setCurrentIndex(0)
+    updateSource('prothomAlo', { currentIndex: 0 })
     try {
       const response = await fetch('/api/news/prothom-alo')
       const data = await response.json()
       if (data.success) {
-        setNews(data.items)
+        updateSource('prothomAlo', { news: data.items, hasFetched: true })
       } else {
         throw new Error(data.error || 'Failed to fetch news')
       }
@@ -34,7 +41,7 @@ export default function ProthomAloGallery() {
   }, [])
 
   const handleComplete = () => {
-    setCurrentIndex(prev => prev + 1)
+    updateSource('prothomAlo', { currentIndex: useGalleryStore.getState().prothomAlo.currentIndex + 1 })
   }
 
   if (loading) {
