@@ -29,7 +29,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             templateId: {
               type: "string",
-              description: "ID of the template (e.g. 'dual-classic', 'single-news', 'full-overlay', 'side-story', 'minimal-white', 'dual-mosaic').",
+              description: "ID of the template (e.g. 'single-news', 'dual-classic', 'full-overlay', 'side-story', 'minimal-white', 'dual-mosaic', 'poll-voting', 'versus-debate', 'quote-spotlight', 'breaking-ribbon', 'stat-fact'). ALWAYS pick the MOST RELEVANT template based on context (e.g. use poll-voting for questions, versus-debate for clashes/sports, quote-spotlight for quotes, breaking-ribbon for urgency).",
             },
             headline: {
               type: "string",
@@ -49,6 +49,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             source: {
               type: "string",
               description: "Source attribution (e.g. 'Prothom Alo').",
+            },
+            pollOptions: {
+              type: "array",
+              description: "Only used if templateId is 'poll-voting'. Provides the two text labels for the vote layout buttons. Defaults to ['YES', 'NO'].",
+              items: { type: "string" }
             },
             photos: {
               type: "array",
@@ -118,12 +123,36 @@ function debugLog(msg: string) {
   }
 }
 
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
+  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+  'feedparser/2.0',
+]
+
 async function fetchProthomAlo() {
   const rssUrl = "https://www.prothomalo.com/stories.rss";
   debugLog("Fetching Prothom Alo news RSS...");
-  const response = await fetch(rssUrl);
-  if (!response.ok) throw new Error(`Failed to fetch Prothom Alo RSS: ${response.status}`);
-  const xml = await response.text();
+  
+  let xml = "";
+  for (const ua of USER_AGENTS) {
+    try {
+      const response = await fetch(rssUrl, {
+        headers: {
+          'User-Agent': ua,
+          'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text.trim().startsWith('<') && text.includes('<item>')) {
+          xml = text;
+          break;
+        }
+      }
+    } catch (_) { }
+  }
+
+  if (!xml) throw new Error("Failed to fetch Prothom Alo RSS: Server unavailable");
 
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
   const items = [];
@@ -134,9 +163,15 @@ async function fetchProthomAlo() {
     const tMatch = entry.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) || entry.match(/<title>([\s\S]*?)<\/title>/);
     const headline = tMatch ? tMatch[1].trim() : "Untitled";
 
+    let imageUrl = null;
     const iMatch = entry.match(/<media:content[^>]+url=["']([^"']+)["']/i) || 
                    entry.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i);
-    const imageUrl = iMatch ? iMatch[1].trim() : null;
+    if (iMatch) {
+      imageUrl = iMatch[1].trim();
+    } else {
+      const imgMatch = entry.match(/src=["']([^"']+\.(?:jpg|jpeg|png|webp|jfif|gif|svg)(?:\?[^"']*)?)["']/i);
+      if (imgMatch) imageUrl = imgMatch[1].trim();
+    }
 
     const dMatch = entry.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
     const pubDate = dMatch ? dMatch[1].trim() : "";
@@ -146,11 +181,7 @@ async function fetchProthomAlo() {
   return { sourceName: "Prothom Alo", items };
 }
 
-const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
-  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-  'feedparser/2.0',
-]
+
 
 async function fetchBd24Live() {
   const rssUrl = "https://www.bd24live.com/bangla/feed/";
@@ -274,6 +305,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       handle = "Kurigram City",
       website = "Kurigram City",
       source = "",
+      pollOptions,
       photos = [],
       styleOverrides = {},
       permanent = false
@@ -297,6 +329,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       handle,
       website,
       source,
+      pollOptions,
       adText: "",
       photos: photoSlots
     };
