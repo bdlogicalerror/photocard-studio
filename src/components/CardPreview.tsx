@@ -20,6 +20,32 @@ const fontMap: Record<string, string> = {
   sans: "system-ui, sans-serif",
 }
 
+function getContrastColor(hexcolor: string) {
+  if (!hexcolor || hexcolor === 'transparent' || hexcolor.startsWith('rgba(0,0,0,0)')) return '#ffffff'
+  
+  // Handle rgba
+  if (hexcolor.startsWith('rgba')) {
+    const match = hexcolor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (match) {
+      const r = parseInt(match[1])
+      const g = parseInt(match[2])
+      const b = parseInt(match[3])
+      const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
+      return (yiq >= 128) ? '#000000' : '#ffffff'
+    }
+  }
+
+  // Handle hex
+  let hex = hexcolor.replace("#", "")
+  if (hex.length === 3) hex = hex.split('').map(s => s + s).join('')
+  
+  const r = parseInt(hex.substr(0, 2), 16)
+  const g = parseInt(hex.substr(2, 2), 16)
+  const b = parseInt(hex.substr(4, 2), 16)
+  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
+  return (yiq >= 128) ? '#000000' : '#ffffff'
+}
+
 const InteractionContext = React.createContext({
   isInteractive: false,
   onPhotoChange: (id: string, patch: any) => {},
@@ -168,7 +194,7 @@ function BrandBar({ style, brandName = '', handle, website, source }: { style: T
         <div style={{ 
           marginLeft: 'auto',
           background: style.accentColor,
-          color: '#fff',
+          color: getContrastColor(style.accentColor),
           fontSize: '1.1cqw',
           fontWeight: 700,
           padding: '0.4cqw 1cqw',
@@ -216,7 +242,7 @@ function HeadlineBlock({ style, headline, subheadline, flex }: {
   )
 }
 
-function BlurBox({ id, x, y, width, height }: { id: string, x: number, y: number, width: number, height: number }) {
+function BlurBox({ id, x, y, width, height, blur = 16 }: { id: string, x: number, y: number, width: number, height: number, blur?: number }) {
   const { isInteractive, onBlurChange, onBlurRemove } = React.useContext(InteractionContext)
   const isDragging = React.useRef(false)
   const isResizing = React.useRef(false)
@@ -267,11 +293,11 @@ function BlurBox({ id, x, y, width, height }: { id: string, x: number, y: number
         top: `${y}%`,
         width: `${width}%`,
         height: `${height}%`,
-        backdropFilter: 'blur(16px)',
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        boxShadow: isInteractive ? '0 0 10px rgba(0,0,0,0.2)' : 'none',
-        border: isInteractive ? '2px solid rgba(255,255,255,0.8)' : 'none',
-        outline: isInteractive ? '1px solid rgba(0,0,0,0.3)' : 'none',
+        backdropFilter: `blur(${blur}px)`,
+        WebkitBackdropFilter: `blur(${blur}px)`,
+        backgroundColor: 'rgba(255,255,255,0.02)',
+        boxShadow: isInteractive ? '0 0.5cqw 1.5cqw rgba(0,0,0,0.3)' : 'none',
+        borderRadius: '1.2cqw',
         cursor: isInteractive ? 'move' : 'default',
         zIndex: 50,
         display: 'flex',
@@ -282,17 +308,46 @@ function BlurBox({ id, x, y, width, height }: { id: string, x: number, y: number
     >
       {/* Fallback for html2canvas which doesn't support backdrop-filter */}
       <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: -1 }}>
-        <rect width="100%" height="100%" fill="rgba(255,255,255,0.4)" filter="url(#svgBlurFilter)" />
+        <rect width="100%" height="100%" rx="1.2cqw" ry="1.2cqw" fill="rgba(255,255,255,0.3)" filter={`url(#svgBlurFilter-${blur})`} />
       </svg>
 
       {isInteractive && (
         <>
           <button 
             onClick={(e) => { e.stopPropagation(); onBlurRemove(id); }}
-            style={{ position: 'absolute', top: -10, right: -10, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, border: 'none', cursor: 'pointer' }}
+            onPointerDown={(e) => e.stopPropagation()} // Fix deletion by stopping propagation to move handler
+            className="flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+            style={{ 
+              position: 'absolute', top: -14, right: -14, 
+              background: '#ef4444', color: '#fff', 
+              borderRadius: '50%', width: 28, height: 28, 
+              fontSize: 14, border: '2px solid white', 
+              cursor: 'pointer', zIndex: 60,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}
           >
             ✕
           </button>
+          
+          {/* Blur Intensity Slider */}
+          <div 
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute', bottom: -35, left: '50%', transform: 'translateX(-50%)',
+              background: 'rgba(0,0,0,0.8)', padding: '4px 10px', borderRadius: '100px',
+              display: 'flex', alignItems: 'center', gap: '8px', zIndex: 60,
+              backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+              minWidth: '100px'
+            }}
+          >
+            <span style={{ color: 'white', fontSize: '9px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>BLUR</span>
+            <input 
+              type="range" min="0" max="64" step="1" value={blur}
+              onChange={(e) => onBlurChange(id, { blur: parseInt(e.target.value) })}
+              style={{ width: '60px', height: '4px', accentColor: '#ef4444', cursor: 'pointer' }}
+            />
+          </div>
           <div 
             onPointerDown={(e) => handleDown(e, 'resize')}
             style={{ position: 'absolute', bottom: 0, right: 0, width: 15, height: 15, cursor: 'nwse-resize', background: 'rgba(255,255,255,0.5)', clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
@@ -309,15 +364,21 @@ const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardDat
   const blurRegions = cardData.blurRegions || []
 
   // Global SVG filter for html2canvas compatibility
-  const BlurFilters = () => (
-    <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-      <defs>
-        <filter id="svgBlurFilter">
-          <feGaussianBlur stdDeviation="12" />
-        </filter>
-      </defs>
-    </svg>
-  )
+  const BlurFilters = () => {
+    // Collect all unique blur values used in the card
+    const blurValues = Array.from(new Set(blurRegions.map(b => b.blur || 16)))
+    return (
+      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+        <defs>
+          {blurValues.map(v => (
+            <filter id={`svgBlurFilter-${v}`} key={v}>
+              <feGaussianBlur stdDeviation={v * 0.75} />
+            </filter>
+          ))}
+        </defs>
+      </svg>
+    )
+  }
 
   // Wrap layouts to include blur regions
   const withBlurs = (children: React.ReactNode) => (

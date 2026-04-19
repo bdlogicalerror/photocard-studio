@@ -13,6 +13,7 @@ export type BlurRegion = {
   y: number
   width: number  // size in percentage (0-100)
   height: number
+  blur: number   // blur intensity in px
 }
 
 export type TemplateLayout =

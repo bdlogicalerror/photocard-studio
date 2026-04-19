@@ -108,7 +108,8 @@ export const useStore = create<Store>()(
             x: 40,
             y: 40,
             width: 20,
-            height: 20
+            height: 20,
+            blur: 16
           }
           return { cardData: { ...s.cardData, blurRegions: [...(s.cardData.blurRegions || []), newBlur] } }
         }),
