@@ -14,6 +14,11 @@ const LAYOUT_OPTIONS: { value: TemplateLayout; label: string; photos: 1 | 2 | 3 
   { value: 'dual-side',        label: 'Photo Left',        photos: 1 },
   { value: 'dual-side-reverse',label: 'Photo Right',       photos: 1 },
   { value: 'triple-mosaic',    label: '3 Photo Mosaic',    photos: 3 },
+  { value: 'poll-vote',        label: 'Poll / Vote',       photos: 1 },
+  { value: 'versus-clash',     label: 'VS Clash',          photos: 2 },
+  { value: 'quote-focus',      label: 'Quote Focus',       photos: 1 },
+  { value: 'breaking-alert',   label: 'Breaking News',     photos: 1 },
+  { value: 'stat-highlight',   label: 'Factoid / Stat',    photos: 1 },
 ]
 
 const LAYOUT_ICONS: Record<TemplateLayout, string> = {
@@ -24,6 +29,11 @@ const LAYOUT_ICONS: Record<TemplateLayout, string> = {
   'dual-side':         '█▬',
   'dual-side-reverse': '▬█',
   'triple-mosaic':     '▬█\n▬█',
+  'poll-vote':         '████\n[Y][N]',
+  'versus-clash':      '████\n-VS-',
+  'quote-focus':       '❝██❞\n████',
+  'breaking-alert':    '!██!\n████',
+  'stat-highlight':    '100%\n████',
 }
 
 function LayoutThumb({ layout }: { layout: TemplateLayout }) {
@@ -35,6 +45,11 @@ function LayoutThumb({ layout }: { layout: TemplateLayout }) {
     'dual-side': 'bg-zinc-700',
     'dual-side-reverse': 'bg-zinc-700',
     'triple-mosaic': 'bg-zinc-700',
+    'poll-vote': 'bg-zinc-700',
+    'versus-clash': 'bg-zinc-700',
+    'quote-focus': 'bg-zinc-700',
+    'breaking-alert': 'bg-zinc-700',
+    'stat-highlight': 'bg-zinc-700',
   }
   const w = 36, h = 36
   const layouts: Record<TemplateLayout, React.ReactNode> = {
@@ -86,6 +101,42 @@ function LayoutThumb({ layout }: { layout: TemplateLayout }) {
         <rect x="0" y="11" width="16" height="9" fill="#666"/>
         <rect x="18" y="0" width="18" height="20" fill="#777"/>
         <rect x="0" y="22" width="36" height="10" fill="#c0392b"/>
+        <rect x="0" y="34" width="36" height="2" fill="#111"/>
+      </svg>
+    ),
+    'poll-vote': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="36" height="24" fill="#555"/>
+        <rect x="2" y="26" width="15" height="8" rx="2" fill="#22c55e"/>
+        <rect x="19" y="26" width="15" height="8" rx="2" fill="#ef4444"/>
+      </svg>
+    ),
+    'versus-clash': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <polygon points="0,0 22,0 14,36 0,36" fill="#555"/>
+        <polygon points="22,0 36,0 36,36 14,36" fill="#777"/>
+        <circle cx="18" cy="18" r="6" fill="#ef4444"/>
+      </svg>
+    ),
+    'quote-focus': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="20" height="36" fill="#333"/>
+        <text x="2" y="20" fontSize="24" fill="#fbbf24" opacity="0.3" fontFamily="serif">“</text>
+        <rect x="22" y="0" width="14" height="36" fill="#555"/>
+      </svg>
+    ),
+    'breaking-alert': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="36" height="24" fill="#555"/>
+        <polygon points="0,2 36,2 33,8 0,8" fill="#ef4444"/>
+        <rect x="0" y="24" width="36" height="12" fill="#c0392b"/>
+      </svg>
+    ),
+    'stat-highlight': (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        <rect x="0" y="0" width="16" height="36" fill="#555"/>
+        <rect x="18" y="0" width="18" height="36" fill="#166534"/>
+        <text x="19" y="16" fontSize="12" fontWeight="bold" fill="#86efac">00%</text>
         <rect x="0" y="34" width="36" height="2" fill="#111"/>
       </svg>
     ),

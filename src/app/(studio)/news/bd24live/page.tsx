@@ -47,20 +47,26 @@ export default function BD24LiveGallery() {
   }
 
   if (error) {
+    const isServerDown = error.toLowerCase().includes('unavailable') || error.toLowerCase().includes('server error')
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
         <div className="p-4 bg-red-900/20 rounded-full text-red-500">
            <RefreshCcw className="w-8 h-8" />
         </div>
         <div>
-            <h2 className="text-lg font-bold text-white mb-2">Failed to load news</h2>
+            <h2 className="text-lg font-bold text-white mb-2">
+              {isServerDown ? 'BD24Live is temporarily unavailable' : 'Failed to load news'}
+            </h2>
             <p className="text-zinc-500 max-w-xs mx-auto text-sm">{error}</p>
+            {isServerDown && (
+              <p className="text-zinc-600 text-xs mt-2">The BD24Live server is currently returning errors. Please try again in a few minutes.</p>
+            )}
         </div>
         <button 
           onClick={fetchNews}
-          className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full text-sm font-bold transition-colors"
+          className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full text-sm font-bold transition-colors flex items-center gap-2"
         >
-          Try Again
+          <RefreshCcw size={14} /> Try Again
         </button>
       </div>
     )

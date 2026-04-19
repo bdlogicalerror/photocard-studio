@@ -146,12 +146,36 @@ async function fetchProthomAlo() {
   return { sourceName: "Prothom Alo", items };
 }
 
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
+  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+  'feedparser/2.0',
+]
+
 async function fetchBd24Live() {
   const rssUrl = "https://www.bd24live.com/bangla/feed/";
   debugLog("Fetching BD24Live news RSS...");
-  const response = await fetch(rssUrl);
-  if (!response.ok) throw new Error(`Failed to fetch BD24Live RSS: ${response.status}`);
-  const xml = await response.text();
+
+  let xml = "";
+  for (const ua of USER_AGENTS) {
+    try {
+      const response = await fetch(rssUrl, {
+        headers: {
+          'User-Agent': ua,
+          'Accept': 'application/rss+xml, application/xml, text/xml, */*'
+        }
+      });
+      if (response.ok) {
+        const text = await response.text();
+        if (text.trim().startsWith('<') && text.includes('<item>')) {
+          xml = text;
+          break;
+        }
+      }
+    } catch (_) { }
+  }
+
+  if (!xml) throw new Error("Failed to fetch BD24Live RSS: Server unavailable");
 
   const itemRegex = /<item>([\s\S]*?)<\/item>/g;
   const items = [];

@@ -15,6 +15,11 @@ export type TemplateLayout =
   | 'dual-side-reverse'// text left, 1 photo right
   | 'full-overlay'     // 1 photo full bleed, text overlaid
   | 'triple-mosaic'    // 2 photos top-left stack + 1 right, text bottom
+  | 'poll-vote'        // Vote buttons at the bottom
+  | 'versus-clash'     // 2 photos splitting with a VS shield
+  | 'quote-focus'      // Giant quote marks emphasizes the headline
+  | 'breaking-alert'   // Breaking news ribbon/overlay
+  | 'stat-highlight'   // Highlights numeric subheadline predominantly
 
 export type Template = {
   id: string
@@ -59,6 +64,7 @@ export type CardData = {
   adText: string
   watermarkText: string
   source?: string
+  pollOptions?: [string, string]
   photos: PhotoSlot[]
 }
 
@@ -94,6 +100,7 @@ export const DEFAULT_CARD_DATA: CardData = {
   website: 'মুজিব বাহিনী',
   adText: '',
   watermarkText: 'মুজিব বাহিনী',
+  pollOptions: ['হ্যাঁ', 'না'],
   photos: [
     { id: 'p1', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
     { id: 'p2', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
@@ -193,6 +200,87 @@ export const BUILT_IN_TEMPLATES: Template[] = [
       brandBarBg: '#3b0764',
       brandColor: '#e879f9',
       headlineFontSize: 50,
+    },
+  },
+  {
+    id: 'poll-voting',
+    name: 'Opinion Poll',
+    description: 'Headline question with YES/NO buttons',
+    layout: 'poll-vote',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      accentColor: '#0ea5e9',
+      backgroundColor: '#0f172a',
+      brandBarBg: '#020617',
+      brandColor: '#38bdf8',
+      headlineFontSize: 56,
+    },
+  },
+  {
+    id: 'versus-debate',
+    name: 'VS Debate',
+    description: '2 competitors with a VS badge in middle',
+    layout: 'versus-clash',
+    photoCount: 2,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#111827',
+      accentColor: '#ef4444',
+      brandBarBg: '#030712',
+      headlineFontSize: 60,
+    },
+  },
+  {
+    id: 'quote-spotlight',
+    name: 'Quote Spotlight',
+    description: 'Prominent quote marks with author side photo',
+    layout: 'quote-focus',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#f8fafc',
+      headlineColor: '#0f172a',
+      subheadlineColor: '#475569',
+      brandBarBg: '#0f172a',
+      accentColor: '#fbbf24',
+      headlineFontSize: 52,
+    },
+  },
+  {
+    id: 'breaking-ribbon',
+    name: 'Breaking News',
+    description: 'Alert-style with breaking ribbon over image',
+    layout: 'breaking-alert',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#dc2626',
+      accentColor: '#fef08a',
+      headlineFontSize: 64,
+      brandBarBg: '#7f1d1d',
+      brandColor: '#faca15',
+    },
+  },
+  {
+    id: 'stat-fact',
+    name: 'Factoid/Stat',
+    description: 'Massive stat number focus',
+    layout: 'stat-highlight',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#166534',
+      accentColor: '#86efac',
+      brandBarBg: '#14532d',
+      brandColor: '#bbf7d0',
+      headlineFontSize: 36,
+      subheadlineFontSize: 120, // huge for numbers
     },
   },
 ]

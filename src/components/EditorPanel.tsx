@@ -174,6 +174,20 @@ export default function EditorPanel() {
           <Field label="Subheadline">
             <input type="text" value={cardData.subheadline} onChange={e => updateCardData({ subheadline: e.target.value })} className={inputCls} />
           </Field>
+          {template.layout === 'poll-vote' && (
+            <Field label="Poll Options (comma separated)">
+              <input
+                type="text"
+                value={(cardData.pollOptions || ['YES', 'NO']).join(', ')}
+                onChange={e => {
+                  const opts = e.target.value.split(',').map(s => s.trim())
+                  updateCardData({ pollOptions: [opts[0] || 'YES', opts[1] || 'NO'] })
+                }}
+                className={inputCls}
+                placeholder="YES, NO"
+              />
+            </Field>
+          )}
         </Section>
 
         <Section title="Branding">

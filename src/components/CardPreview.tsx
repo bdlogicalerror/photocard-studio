@@ -30,7 +30,6 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
         <img
           src={src}
           alt=""
-          crossOrigin="anonymous"
           style={{
             width: '100%', height: '100%',
             objectFit: objectFit as any,
@@ -302,6 +301,152 @@ export default function CardPreview({ template, cardData, forExport = false }: P
               <PhotoSlot {...(p[2] || {})} placeholder="Photo 3" />
             </div>
             <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </>
+        )
+
+      case 'poll-vote':
+        const opts = cardData.pollOptions || ['YES', 'NO']
+        return (
+          <>
+            {style.accentBarPosition === 'top' && accentBar}
+            <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} flex={0} />
+            <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+              <PhotoSlot {...(p[0] || {})} placeholder="Subject Photo" />
+            </div>
+            
+            {/* Poll Buttons Overlay */}
+            <div style={{
+              background: style.backgroundColor, padding: '2cqw 4cqw 3cqw',
+              display: 'flex', gap: '2cqw', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <div style={{
+                flex: 1, background: '#22c55e', color: '#fff', textAlign: 'center', padding: '1.5cqw 0',
+                borderRadius: '1.5cqw', fontSize: '3.5cqw', fontWeight: 900, fontFamily: 'sans-serif',
+                boxShadow: '0 0.5cqw 1cqw rgba(0,0,0,0.2)', border: '0.3cqw solid rgba(255,255,255,0.2)'
+              }}>👍 {opts[0]}</div>
+              <div style={{
+                flex: 1, background: '#ef4444', color: '#fff', textAlign: 'center', padding: '1.5cqw 0',
+                borderRadius: '1.5cqw', fontSize: '3.5cqw', fontWeight: 900, fontFamily: 'sans-serif',
+                boxShadow: '0 0.5cqw 1cqw rgba(0,0,0,0.2)', border: '0.3cqw solid rgba(255,255,255,0.2)'
+              }}>👎 {opts[1]}</div>
+            </div>
+
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </>
+        )
+
+      case 'versus-clash':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {style.accentBarPosition === 'top' && accentBar}
+            <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} flex={0} />
+            <div style={{ flex: 1, position: 'relative', display: 'flex', overflow: 'hidden' }}>
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0 100%)' }}>
+                <PhotoSlot {...(p[0] || {})} placeholder="Corner 1" />
+              </div>
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', marginLeft: '-15%', clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0 100%)' }}>
+                <PhotoSlot {...(p[1] || {})} placeholder="Corner 2" />
+              </div>
+
+              {/* VS Badge */}
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                background: style.accentColor, width: '12cqw', height: '12cqw', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', border: '0.6cqw solid white',
+                boxShadow: '0 1cqw 3cqw rgba(0,0,0,0.5)', zIndex: 10
+              }}>
+                <span style={{ color: 'white', fontWeight: 900, fontSize: '4.5cqw', fontStyle: 'italic', fontFamily: 'sans-serif' }}>VS</span>
+              </div>
+            </div>
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </div>
+        )
+
+      case 'quote-focus':
+        return (
+          <>
+            {style.accentBarPosition === 'top' && accentBar}
+            <div style={{ flex: 1, display: 'flex', minHeight: 0, background: style.backgroundColor }}>
+              <div style={{ flex: 1, padding: '4cqw', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+                {/* Giant Quote Mark Background */}
+                <div style={{
+                  position: 'absolute', top: '0', left: '2cqw', fontSize: '25cqw', color: style.accentColor,
+                  opacity: 0.15, fontFamily: 'serif', lineHeight: 1, pointerEvents: 'none'
+                }}>“</div>
+                <p style={{
+                  fontFamily: fontMap[style.fontFamily], fontWeight: style.headlineFontWeight,
+                  fontSize: `calc(${style.headlineFontSize / 8}cqw)`, color: style.headlineColor,
+                  lineHeight: 1.3, margin: '0 0 2cqw 0', zIndex: 1, position: 'relative'
+                }}>“{cardData.headline}”</p>
+                {cardData.subheadline && (
+                  <p style={{
+                    fontFamily: fontMap[style.fontFamily], fontSize: `calc(${style.subheadlineFontSize / 8}cqw)`,
+                    color: style.subheadlineColor, margin: 0, fontWeight: 700, borderLeft: `0.4cqw solid ${style.accentColor}`, paddingLeft: '1.5cqw'
+                  }}>{cardData.subheadline}</p>
+                )}
+              </div>
+              <div style={{ flex: '0 0 45%', overflow: 'hidden' }}>
+                 <PhotoSlot {...(p[0] || {})} placeholder="Photo" />
+              </div>
+            </div>
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </>
+        )
+
+      case 'breaking-alert':
+        return (
+          <div style={{ position: 'relative', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            {style.accentBarPosition === 'top' && accentBar}
+            <div style={{ position: 'relative', flex: '0 0 60%', overflow: 'hidden' }}>
+              <PhotoSlot {...(p[0] || {})} placeholder="Photo" />
+              {/* BREAKING Ribbon */}
+              <div style={{
+                position: 'absolute', top: '1.5cqw', left: 0, background: style.accentColor, color: style.backgroundColor,
+                padding: '0.8cqw 2.5cqw 0.8cqw 1.5cqw', fontWeight: 900, fontSize: '2.5cqw', fontFamily: 'sans-serif',
+                textTransform: 'uppercase', clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0 100%)', boxShadow: '0 1cqw 2cqw rgba(0,0,0,0.5)'
+              }}>
+                BREAKING NEWS
+              </div>
+              {/* Optional slight dark gradient from bottom of image */}
+              <div style={{ position: 'absolute', inset: '50% 0 0 0', background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)' }} />
+            </div>
+            
+            <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} />
+            <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </div>
+        )
+
+      case 'stat-highlight':
+        return (
+          <>
+            {style.accentBarPosition === 'top' && accentBar}
+            <div style={{ flex: '0 0 45%', minHeight: 0, overflow: 'hidden' }}>
+              <PhotoSlot {...(p[0] || {})} placeholder="Photo" />
+            </div>
+            <div style={{
+              background: style.backgroundColor, display: 'flex', flexDirection: 'column', 
+              justifyContent: 'center', padding: '3cqw 4cqw', flex: 1, gap: '1cqw'
+            }}>
+              {/* Massive Subheadline (used for the stat) */}
+              <p style={{
+                fontFamily: 'sans-serif', fontWeight: 900,
+                fontSize: `calc(${style.subheadlineFontSize / 8}cqw)`,
+                color: style.accentColor, lineHeight: 1, margin: 0, letterSpacing: '-0.2cqw'
+              }}>{cardData.subheadline || '00%'}</p>
+              
+              {/* Standard Headline explaining the stat */}
+              <p style={{
+                fontFamily: fontMap[style.fontFamily], fontWeight: style.headlineFontWeight,
+                fontSize: `calc(${style.headlineFontSize / 8}cqw)`, color: style.headlineColor,
+                lineHeight: 1.2, margin: 0
+              }}>{cardData.headline || 'Statistic description goes here'}</p>
+            </div>
             <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
             {style.accentBarPosition === 'bottom' && accentBar}
           </>

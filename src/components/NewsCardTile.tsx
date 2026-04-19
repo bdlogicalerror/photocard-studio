@@ -30,6 +30,11 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
   const generateCard = async () => {
     setStatus('generating')
     try {
+      // Proxy the image through our server to avoid CORS issues with external news sites
+      const proxiedImage = imageUrl
+        ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
+        : null
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -42,7 +47,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
             website: 'Kurigram City',
             source,
             photos: [
-              { id: 'p1', src: imageUrl, objectPosition: 'center', objectFit: 'cover', scale: 1 }
+              { id: 'p1', src: proxiedImage, objectPosition: 'center', objectFit: 'cover', scale: 1 }
             ]
           },
           templateId: 'single-news'
