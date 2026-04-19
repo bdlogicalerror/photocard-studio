@@ -24,6 +24,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
   const [error, setError] = useState<string | null>(null)
 
   const updateCardData = useStore(s => s.updateCardData)
+  const setActiveTemplate = useStore(s => s.setActiveTemplate)
   const router = useRouter()
 
   useEffect(() => {
@@ -32,6 +33,24 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
     }
   }, [shouldStart, status])
 
+  const getDynamicTemplate = (text: string) => {
+    const len = text.length
+    if (text.includes('ব্রেকিং') || text.includes('নিহত') || text.includes('হামলা') || text.includes('গ্রেপ্তার') || text.includes('মামলা') || text.includes('আগুন')) {
+      return 'breaking-ribbon'
+    }
+    if (
+      len > 90 || 
+      text.includes('‘') || text.includes('’') || text.includes('"') || text.includes("'") ||
+      text.includes('বলেছেন') || text.includes('বললেন') || text.includes('জানিয়েছেন') || text.includes('জানান')
+    ) {
+      return 'quote-spotlight'
+    }
+    if (len < 40) {
+      return 'full-overlay'
+    }
+    return 'single-news'
+  }
+
   const generateCard = async () => {
     setStatus('generating')
     try {
@@ -39,6 +58,8 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
       const proxiedImage = imageUrl
         ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
         : null
+        
+      const templateId = getDynamicTemplate(headline)
 
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -55,7 +76,7 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
               { id: 'p1', src: proxiedImage, objectPosition: 'center', objectFit: 'cover', scale: 1 }
             ]
           },
-          templateId: 'single-news'
+          templateId
         })
       })
 
@@ -154,6 +175,9 @@ export default function NewsCardTile({ headline, imageUrl, source = 'News', inde
     const proxiedImage = imageUrl
       ? `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`
       : null
+
+    const templateId = getDynamicTemplate(headline)
+    setActiveTemplate(templateId)
 
     updateCardData({
       headline,
