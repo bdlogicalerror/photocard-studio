@@ -84,7 +84,19 @@ export const useStore = create<Store>()(
       resetCardData: () =>
         set({ cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })) } }),
     }),
-    { name: 'photocard-studio-v1' }
+    {
+      name: 'photocard-studio-v1',
+      merge: (persistedState: any, currentState: Store) => {
+        // Ensure new BUILT_IN_TEMPLATES are always included, preserving custom user templates
+        const parsed = persistedState as Store
+        const customTemplates = (parsed?.templates || []).filter((t: Template) => !t.isBuiltIn)
+        return {
+          ...currentState,
+          ...parsed,
+          templates: [...BUILT_IN_TEMPLATES, ...customTemplates],
+        }
+      }
+    }
   )
 )
 
