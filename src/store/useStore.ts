@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuid } from 'uuid'
 import {
-  Template, CardData, TemplateStyle, PhotoSlot,
+  Template, CardData, TemplateStyle, PhotoSlot, BlurRegion,
   BUILT_IN_TEMPLATES, DEFAULT_CARD_DATA, DEFAULT_STYLE
 } from '@/lib/types'
 
@@ -22,6 +22,10 @@ type Store = {
   deleteTemplate: (id: string) => void
   renameTemplate: (id: string, name: string) => void
   resetCardData: () => void
+  
+  addBlurRegion: () => void
+  updateBlurRegion: (id: string, patch: Partial<BlurRegion>) => void
+  removeBlurRegion: (id: string) => void
   _hasHydrated: boolean
   setHasHydrated: (v: boolean) => void
 }
@@ -95,7 +99,35 @@ export const useStore = create<Store>()(
         })),
 
       resetCardData: () =>
-        set({ cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })) } }),
+        set({ cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })), blurRegions: [] } }),
+
+      addBlurRegion: () =>
+        set(s => {
+          const newBlur: BlurRegion = {
+            id: uuid(),
+            x: 40,
+            y: 40,
+            width: 20,
+            height: 20
+          }
+          return { cardData: { ...s.cardData, blurRegions: [...s.cardData.blurRegions, newBlur] } }
+        }),
+
+      updateBlurRegion: (id, patch) =>
+        set(s => ({
+          cardData: {
+            ...s.cardData,
+            blurRegions: s.cardData.blurRegions.map(b => b.id === id ? { ...b, ...patch } : b)
+          }
+        })),
+
+      removeBlurRegion: (id) =>
+        set(s => ({
+          cardData: {
+            ...s.cardData,
+            blurRegions: s.cardData.blurRegions.filter(b => b.id !== id)
+          }
+        })),
     }),
     {
       name: 'photocard-studio-v1',

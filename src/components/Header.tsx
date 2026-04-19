@@ -11,6 +11,7 @@ export default function Header() {
     { name: 'Studio', href: '/', icon: Layers },
     { name: 'Prothom Alo', href: '/news/prothom-alo', icon: Newspaper },
     { name: 'BD24Live', href: '/news/bd24live', icon: Newspaper },
+    { name: 'ABP Live (IN)', href: '/news/abp-live', icon: Newspaper },
   ]
 
   return (

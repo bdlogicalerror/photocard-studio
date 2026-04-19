@@ -8,7 +8,9 @@ type Props = {
   template: Template
   cardData: CardData
   forExport?: boolean
-  onPhotoPositionChange?: (id: string, pos: string) => void
+  onPhotoChange?: (id: string, patch: any) => void
+  onBlurChange?: (id: string, patch: any) => void
+  onBlurRemove?: (id: string) => void
 }
 
 const fontMap: Record<string, string> = {
@@ -18,9 +20,11 @@ const fontMap: Record<string, string> = {
   sans: "system-ui, sans-serif",
 }
 
-const DragContext = React.createContext({
+const InteractionContext = React.createContext({
   isInteractive: false,
-  onPositionChange: (id: string, pos: string) => {}
+  onPhotoChange: (id: string, patch: any) => {},
+  onBlurChange: (id: string, patch: any) => {},
+  onBlurRemove: (id: string) => {}
 })
 
 function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale = 1, placeholder, id }: {
@@ -31,7 +35,7 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
   placeholder: string
   id?: string
 }) {
-  const { isInteractive, onPositionChange } = React.useContext(DragContext)
+  const { isInteractive, onPhotoChange } = React.useContext(InteractionContext)
   const isDragging = React.useRef(false)
   const startMouse = React.useRef({ x: 0, y: 0 })
 
@@ -56,12 +60,13 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
     startMouse.current = { x: e.clientX, y: e.clientY }
 
     const cur = getInitialPos()
-    const factor = 0.5 / scale 
+    // Adjusted pan speed based on scale
+    const factor = 0.5 / (scale || 1)
     const newX = Math.max(0, Math.min(100, cur.x - dx * factor))
     const newY = Math.max(0, Math.min(100, cur.y - dy * factor))
 
     if (id) {
-      onPositionChange(id, `${newX.toFixed(1)}% ${newY.toFixed(1)}%`)
+      onPhotoChange(id, { objectPosition: `${newX.toFixed(1)}% ${newY.toFixed(1)}%` })
     }
   }
 
@@ -69,6 +74,16 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
     if (!isDragging.current) return
     isDragging.current = false
     e.currentTarget.releasePointerCapture(e.pointerId)
+  }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!isInteractive || !src || objectFit !== 'cover') return
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -0.1 : 0.1
+    const newScale = Math.max(1, Math.min(5, (scale || 1) + delta))
+    if (id) {
+      onPhotoChange(id, { scale: newScale })
+    }
   }
 
   const bgSizeMap: Record<string, string> = {
@@ -84,6 +99,7 @@ function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale 
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onWheel={handleWheel}
           style={{
             width: '100%', height: '100%',
             backgroundImage: `url(${src})`,
@@ -195,9 +211,97 @@ function HeadlineBlock({ style, headline, subheadline, flex }: {
   )
 }
 
-export default function CardPreview({ template, cardData, forExport = false, onPhotoPositionChange }: Props) {
+function BlurBox({ id, x, y, width, height }: { id: string, x: number, y: number, width: number, height: number }) {
+  const { isInteractive, onBlurChange, onBlurRemove } = React.useContext(InteractionContext)
+  const isDragging = React.useRef(false)
+  const isResizing = React.useRef(false)
+  const startMouse = React.useRef({ x: 0, y: 0 })
+
+  const handleDown = (e: React.PointerEvent, type: 'move' | 'resize') => {
+    if (!isInteractive) return
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    if (type === 'move') isDragging.current = true
+    else isResizing.current = true
+    startMouse.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handleMove = (e: React.PointerEvent) => {
+    if (!isDragging.current && !isResizing.current) return
+    const dx = e.clientX - startMouse.current.x
+    const dy = e.clientY - startMouse.current.y
+    startMouse.current = { x: e.clientX, y: e.clientY }
+
+    const rect = e.currentTarget.parentElement?.getBoundingClientRect()
+    if (!rect) return
+
+    const pdx = (dx / rect.width) * 100
+    const pdy = (dy / rect.height) * 100
+
+    if (isDragging.current) {
+      onBlurChange(id, { x: Math.max(0, Math.min(100 - width, x + pdx)), y: Math.max(0, Math.min(100 - height, y + pdy)) })
+    } else {
+      onBlurChange(id, { width: Math.max(5, width + pdx), height: Math.max(5, height + pdy) })
+    }
+  }
+
+  const handleUp = (e: React.PointerEvent) => {
+    isDragging.current = false
+    isResizing.current = false
+    e.currentTarget.releasePointerCapture(e.pointerId)
+  }
+
+  return (
+    <div
+      onPointerDown={(e) => handleDown(e, 'move')}
+      onPointerMove={handleMove}
+      onPointerUp={handleUp}
+      style={{
+        position: 'absolute',
+        left: `${x}%`,
+        top: `${y}%`,
+        width: `${width}%`,
+        height: `${height}%`,
+        backdropFilter: 'blur(16px)',
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        border: isInteractive ? '1px solid rgba(255,255,255,0.5)' : 'none',
+        cursor: isInteractive ? 'move' : 'default',
+        zIndex: 4,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      {isInteractive && (
+        <>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onBlurRemove(id); }}
+            style={{ position: 'absolute', top: -10, right: -10, background: '#ef4444', color: '#fff', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, border: 'none', cursor: 'pointer' }}
+          >
+            ✕
+          </button>
+          <div 
+            onPointerDown={(e) => handleDown(e, 'resize')}
+            style={{ position: 'absolute', bottom: 0, right: 0, width: 15, height: 15, cursor: 'nwse-resize', background: 'rgba(255,255,255,0.5)', clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+export default function CardPreview({ template, cardData, forExport = false, onPhotoChange, onBlurChange, onBlurRemove }: Props) {
   const { style, layout, photoCount } = template
   const p = cardData.photos || []
+  const blurRegions = cardData.blurRegions || []
+
+  // Wrap layouts to include blur regions
+  const withBlurs = (children: React.ReactNode) => (
+    <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {children}
+      {blurRegions.map(br => <BlurBox key={br.id} {...br} />)}
+    </div>
+  )
 
   const accentBar = style.accentBarPosition !== 'none' && (
     <div style={{ height: `calc(${style.accentBarHeight / 8}cqw)`, background: style.accentColor, flexShrink: 0 }} />
@@ -530,9 +634,14 @@ export default function CardPreview({ template, cardData, forExport = false, onP
         containerType: 'inline-size',
       }}
     >
-      <DragContext.Provider value={{ isInteractive: !!onPhotoPositionChange, onPositionChange: onPhotoPositionChange || (() => {}) }}>
-        {renderLayout()}
-      </DragContext.Provider>
+      <InteractionContext.Provider value={{ 
+        isInteractive: !!onPhotoChange, 
+        onPhotoChange: onPhotoChange || (() => {}),
+        onBlurChange: onBlurChange || (() => {}),
+        onBlurRemove: onBlurRemove || (() => {})
+      }}>
+        {withBlurs(renderLayout())}
+      </InteractionContext.Provider>
       {style.showWatermark && cardData.watermarkText && (
         <div style={{
           position: 'absolute',

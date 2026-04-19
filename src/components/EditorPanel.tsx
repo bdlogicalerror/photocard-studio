@@ -2,7 +2,7 @@
 'use client'
 import { useRef, ChangeEvent } from 'react'
 import { useStore, useActiveTemplate } from '@/store/useStore'
-import { Upload, RefreshCw, Link } from 'lucide-react'
+import { Upload, RefreshCw, Link, Shield } from 'lucide-react'
 import { TemplateStyle } from '@/lib/types'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -146,7 +146,7 @@ function PhotoUploader({ idx, label }: { idx: number; label: string }) {
 }
 
 export default function EditorPanel() {
-  const { cardData, updateCardData, updateStyle, resetCardData } = useStore()
+  const { cardData, updateCardData, updateStyle, resetCardData, addBlurRegion } = useStore()
   const template = useActiveTemplate()
   const style = template.style
 
@@ -180,9 +180,16 @@ export default function EditorPanel() {
               style={{ fontFamily: "'Noto Serif Bengali', serif" }}
             />
           </Field>
+          <div className="mb-4">
+            <SliderField label="Headline size" styleKey="headlineFontSize" min={20} max={100} />
+          </div>
+
           <Field label="Subheadline">
             <input type="text" value={cardData.subheadline} onChange={e => updateCardData({ subheadline: e.target.value })} className={inputCls} />
           </Field>
+          <div className="mb-4">
+            <SliderField label="Subheadline size" styleKey="subheadlineFontSize" min={12} max={60} />
+          </div>
           {template.layout === 'poll-vote' && (
             <Field label="Poll Options (comma separated)">
               <input
@@ -197,6 +204,17 @@ export default function EditorPanel() {
               />
             </Field>
           )}
+        </Section>
+
+        <Section title="Privacy & Tools">
+           <p className="text-[10px] text-zinc-500 mb-3 leading-relaxed">Add a movable blur box to censor faces, names, or sensitive information in the news photo.</p>
+           <button 
+             onClick={addBlurRegion}
+             className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition-all border border-zinc-700/50 shadow-sm"
+           >
+             <Shield size={14} className="text-red-500" />
+             Add Blur Region
+           </button>
         </Section>
 
         <Section title="Branding">
@@ -276,8 +294,6 @@ export default function EditorPanel() {
               <option value="sans">System Sans</option>
             </select>
           </Field>
-          <SliderField label="Headline size" styleKey="headlineFontSize" min={20} max={100} />
-          <SliderField label="Subheadline size" styleKey="subheadlineFontSize" min={12} max={60} />
           <Field label="Headline weight">
             <select
               value={style.headlineFontWeight}

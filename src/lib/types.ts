@@ -7,6 +7,14 @@ export type PhotoSlot = {
   scale: number
 }
 
+export type BlurRegion = {
+  id: string
+  x: number      // position in percentage (0-100)
+  y: number
+  width: number  // size in percentage (0-100)
+  height: number
+}
+
 export type TemplateLayout =
   | 'single-top'       // 1 photo top, text bottom
   | 'single-bottom'    // text top, 1 photo bottom
@@ -66,6 +74,7 @@ export type CardData = {
   source?: string
   pollOptions?: [string, string]
   photos: PhotoSlot[]
+  blurRegions: BlurRegion[]
 }
 
 export const DEFAULT_STYLE: TemplateStyle = {
@@ -105,6 +114,7 @@ export const DEFAULT_CARD_DATA: CardData = {
     { id: 'p1', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
     { id: 'p2', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
   ],
+  blurRegions: [],
 }
 
 export const BUILT_IN_TEMPLATES: Template[] = [
