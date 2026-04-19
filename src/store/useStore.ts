@@ -32,6 +32,8 @@ export const useStore = create<Store>()(
       templates: BUILT_IN_TEMPLATES,
       activeTemplateId: BUILT_IN_TEMPLATES[0].id,
       cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })) },
+      _hasHydrated: false,
+      setHasHydrated: (v) => set({ _hasHydrated: v }),
 
       setActiveTemplate: (id) => set({ activeTemplateId: id }),
 
