@@ -637,6 +637,113 @@ const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardDat
           </>
         )
 
+      case 'portrait-editorial':
+        return (
+          <>
+            {style.accentBarPosition === 'top' && accentBar}
+            <div style={{ flex: 1, display: 'flex', minHeight: 0, background: style.backgroundColor }}>
+              <div style={{ flex: '0 0 50%', overflow: 'hidden' }}>
+                <PhotoSlot {...(p[0] || {})} placeholder="Cover Portrait" />
+              </div>
+              <div style={{ 
+                flex: 1, padding: `${style.padding * 0.15}cqw`, 
+                display: 'flex', flexDirection: 'column', justifyContent: 'center', 
+                gap: '2cqw', position: 'relative', overflow: 'hidden' 
+              }}>
+                <div style={{ height: '3cqw', width: '30%', background: style.accentColor, opacity: 0.5, borderRadius: '1.5cqw' }} />
+                <p style={{
+                  fontFamily: fontMap[style.fontFamily], fontSize: `calc(${style.headlineFontSize / 8}cqw)`,
+                  lineHeight: 1.1, fontWeight: 900, color: style.headlineColor, margin: 0, letterSpacing: '-0.1cqw'
+                }}>{cardData.headline}</p>
+                {cardData.subheadline && (
+                  <p style={{
+                    fontFamily: fontMap[style.fontFamily], fontSize: `calc(${style.subheadlineFontSize / 8}cqw)`,
+                    opacity: 0.7, color: style.subheadlineColor, margin: 0, textTransform: 'uppercase', letterSpacing: '0.2cqw'
+                  }}>{cardData.subheadline}</p>
+                )}
+              </div>
+            </div>
+            <BrandBar style={style} brandName={cardData.brandName} handle={cardData.handle} website={cardData.website} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </>
+        )
+
+      case 'impact-hero':
+        return (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: style.backgroundColor, padding: `${style.padding * 0.125}cqw` }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: '3cqw' }}>
+              <p style={{
+                flex: 1, fontFamily: fontMap[style.fontFamily], fontWeight: 900,
+                fontSize: `calc(${style.headlineFontSize / 8}cqw)`, color: style.headlineColor,
+                lineHeight: 1, margin: 0, letterSpacing: '-0.3cqw', textTransform: 'uppercase'
+              }}>{cardData.headline}</p>
+              <div style={{ flex: '0 0 35%', aspectRatio: '1/1', borderRadius: '2cqw', overflow: 'hidden', border: `0.5cqw solid ${style.accentColor}` }}>
+                 <PhotoSlot {...(p[0] || {})} placeholder="Hero" />
+              </div>
+            </div>
+            {cardData.subheadline && (
+              <p style={{
+                fontFamily: fontMap[style.fontFamily], fontSize: `calc(${style.subheadlineFontSize / 8}cqw)`,
+                color: style.subheadlineColor, margin: '2cqw 0', fontWeight: 600, borderLeft: `0.5cqw solid ${style.accentColor}`, paddingLeft: '2cqw'
+              }}>{cardData.subheadline}</p>
+            )}
+            <BrandBar style={style} brandName={cardData.brandName} handle={cardData.handle} website={cardData.website} source={cardData.source} />
+          </div>
+        )
+
+      case 'news-reel':
+        return (
+          <div style={{ flex: 1, background: style.backgroundColor, padding: '2cqw', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, borderRadius: '4cqw', overflow: 'hidden', position: 'relative' }}>
+               <PhotoSlot {...(p[0] || {})} placeholder="REEL IMAGE" />
+               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)' }} />
+               
+               <div style={{
+                 position: 'absolute', bottom: '3cqw', left: '3cqw', right: '3cqw',
+                 background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)',
+                 borderRadius: '3cqw', padding: '3cqw', border: '1px solid rgba(255,255,255,0.2)',
+                 boxShadow: '0 2cqw 4cqw rgba(0,0,0,0.3)'
+               }}>
+                  <p style={{
+                    fontFamily: fontMap[style.fontFamily], fontSize: `calc(${style.headlineFontSize / 8}cqw)`,
+                    fontWeight: 900, color: '#fff', margin: 0, lineHeight: 1.2
+                  }}>{cardData.headline}</p>
+                  {cardData.subheadline && (
+                    <p style={{
+                      fontFamily: fontMap[style.fontFamily], fontSize: `calc(${style.subheadlineFontSize / 8}cqw)`,
+                      color: 'rgba(255,255,255,0.8)', margin: '1cqw 0 0', fontWeight: 500
+                    }}>{cardData.subheadline}</p>
+                  )}
+               </div>
+               
+               <div style={{ position: 'absolute', top: '3cqw', right: '3cqw' }}>
+                  <BrandBar style={{ ...style, brandBarBg: 'rgba(0,0,0,0.6)', borderRadius: 100 }} brandName={cardData.brandName} source={cardData.source} website="" handle="" />
+               </div>
+            </div>
+          </div>
+        )
+
+      case 'modern-duo':
+        return (
+          <>
+            {style.accentBarPosition === 'top' && accentBar}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: style.photoDividerColor, gap: '0.6cqw' }}>
+               <div style={{ flex: 1, overflow: 'hidden' }}><PhotoSlot {...(p[0] || {})} placeholder="Top" /></div>
+               <div style={{ height: `calc(${style.accentBarHeight / 8}cqw)`, background: style.accentColor }} />
+               <div style={{ flex: 1, overflow: 'hidden' }}><PhotoSlot {...(p[1] || {})} placeholder="Bottom" /></div>
+            </div>
+            <div style={{ background: style.backgroundColor, padding: '3.5cqw 4cqw' }}>
+              <p style={{
+                fontFamily: fontMap[style.fontFamily], fontWeight: 900,
+                fontSize: `calc(${style.headlineFontSize / 8}cqw)`, color: style.headlineColor,
+                lineHeight: 1.2, margin: 0, textAlign: 'center'
+              }}>{cardData.headline}</p>
+            </div>
+            <BrandBar style={style} brandName={cardData.brandName} handle={cardData.handle} website={cardData.website} source={cardData.source} />
+            {style.accentBarPosition === 'bottom' && accentBar}
+          </>
+        )
+
       default:
         return null
     }

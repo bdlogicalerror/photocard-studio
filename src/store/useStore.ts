@@ -110,14 +110,14 @@ export const useStore = create<Store>()(
             width: 20,
             height: 20
           }
-          return { cardData: { ...s.cardData, blurRegions: [...s.cardData.blurRegions, newBlur] } }
+          return { cardData: { ...s.cardData, blurRegions: [...(s.cardData.blurRegions || []), newBlur] } }
         }),
 
       updateBlurRegion: (id, patch) =>
         set(s => ({
           cardData: {
             ...s.cardData,
-            blurRegions: s.cardData.blurRegions.map(b => b.id === id ? { ...b, ...patch } : b)
+            blurRegions: (s.cardData.blurRegions || []).map(b => b.id === id ? { ...b, ...patch } : b)
           }
         })),
 
@@ -125,7 +125,7 @@ export const useStore = create<Store>()(
         set(s => ({
           cardData: {
             ...s.cardData,
-            blurRegions: s.cardData.blurRegions.filter(b => b.id !== id)
+            blurRegions: (s.cardData.blurRegions || []).filter(b => b.id !== id)
           }
         })),
     }),

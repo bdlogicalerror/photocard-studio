@@ -28,6 +28,10 @@ export type TemplateLayout =
   | 'quote-focus'      // Giant quote marks emphasizes the headline
   | 'breaking-alert'   // Breaking news ribbon/overlay
   | 'stat-highlight'   // Highlights numeric subheadline predominantly
+  | 'portrait-editorial' // Half-width tall photo, serif headline
+  | 'impact-hero'      // Small square photo, massive vertical headline
+  | 'news-reel'        // Full-bleed with rounded translucent bars
+  | 'modern-duo'       // Symmetrical vertical split with accent gap
 
 export type Template = {
   id: string
@@ -156,7 +160,7 @@ export const BUILT_IN_TEMPLATES: Template[] = [
       backgroundColor: 'rgba(0,0,0,0)',
       headlineColor: '#ffffff',
       brandBarBg: 'rgba(0,0,0,0.85)',
-      overlayOpacity: 0.6,
+      overlayOpacity: 0.7, // Increased for better readability
       accentBarPosition: 'none',
     },
   },
@@ -291,6 +295,80 @@ export const BUILT_IN_TEMPLATES: Template[] = [
       brandColor: '#bbf7d0',
       headlineFontSize: 36,
       subheadlineFontSize: 120, // huge for numbers
+    },
+  },
+  {
+    id: 'editorial-gold',
+    name: 'Editorial Gold',
+    description: 'High-end serif typography, gold accents, and portrait focus',
+    layout: 'portrait-editorial',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#fdfcf0',
+      headlineColor: '#1a1a1a',
+      subheadlineColor: '#5c5432',
+      accentColor: '#d4af37',
+      brandBarBg: '#1a1a1a',
+      brandColor: '#d4af37',
+      fontFamily: 'display',
+      headlineFontSize: 68,
+      padding: 60,
+    },
+  },
+  {
+    id: 'impact-carbon',
+    name: 'Impact Carbon',
+    description: 'Aggressive dark mode with massive vertical focus',
+    layout: 'impact-hero',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#0a0a0a',
+      headlineColor: '#ffffff',
+      subheadlineColor: '#ef4444',
+      accentColor: '#ef4444',
+      brandBarBg: '#000000',
+      brandColor: '#ffffff',
+      fontFamily: 'sans',
+      headlineFontSize: 90,
+      headlineFontWeight: 900,
+    },
+  },
+  {
+    id: 'news-reel',
+    name: 'News Reel',
+    description: 'Mobile-first look with glassy overlays and rounded photos',
+    layout: 'news-reel',
+    photoCount: 1,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#0f172a',
+      accentColor: '#38bdf8',
+      headlineFontSize: 54,
+      borderRadius: 16,
+      padding: 30,
+    },
+  },
+  {
+    id: 'minimal-split',
+    name: 'Minimal Split',
+    description: 'Symmetrical 50/50 vertical layout with clean divide',
+    layout: 'modern-duo',
+    photoCount: 2,
+    isBuiltIn: true,
+    style: {
+      ...DEFAULT_STYLE,
+      backgroundColor: '#ffffff',
+      headlineColor: '#000000',
+      subheadlineColor: '#666666',
+      accentColor: '#000000',
+      brandBarBg: '#000000',
+      brandColor: '#ffffff',
+      accentBarHeight: 4,
     },
   },
 ]
