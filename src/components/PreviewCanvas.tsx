@@ -18,7 +18,7 @@ export default function PreviewCanvas() {
   const handleExport = async () => {
     setExporting(true)
     try {
-      const html2canvas = (await import('html2canvas')).default
+      const { toPng } = await import('html-to-image')
       const el = cardRef.current
       if (!el) return
 
@@ -26,16 +26,17 @@ export default function PreviewCanvas() {
       await document.fonts.ready
       await new Promise(r => setTimeout(r, 100))
 
-      const canvas = await html2canvas(el, {
-        scale: 3,
-        useCORS: true,
+      const dataUrl = await toPng(el, {
+        pixelRatio: 3,
         backgroundColor: '#ffffff',
-        logging: true,
       })
+      
       const link = document.createElement('a')
       link.download = `${template.name.toLowerCase().replace(/\s+/g, '-')}.png`
-      link.href = canvas.toDataURL('image/png')
+      link.href = dataUrl
       link.click()
+    } catch (err) {
+      console.error('Export failed:', err)
     } finally {
       setExporting(false)
     }
@@ -44,22 +45,19 @@ export default function PreviewCanvas() {
   const handleShare = async () => {
     setExporting(true)
     try {
-      const html2canvas = (await import('html2canvas')).default
+      const { toBlob } = await import('html-to-image')
       const el = cardRef.current
       if (!el) return
 
       await document.fonts.ready
       await new Promise(r => setTimeout(r, 100))
 
-      const canvas = await html2canvas(el, {
-        scale: 3,
-        useCORS: true,
+      const blob = await toBlob(el, {
+        pixelRatio: 3,
         backgroundColor: '#ffffff',
-        logging: true,
       })
+      if (!blob) throw new Error('Share capture failed')
 
-      const dataUrl = canvas.toDataURL('image/png')
-      const blob = await (await fetch(dataUrl)).blob()
       const file = new File([blob], 'photocard.png', { type: 'image/png' })
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -70,6 +68,7 @@ export default function PreviewCanvas() {
         })
       } else {
         // Fallback for desktop/unsupported browsers
+        const dataUrl = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.download = `${template.name.toLowerCase().replace(/\s+/g, '-')}.png`
         link.href = dataUrl
@@ -86,15 +85,14 @@ export default function PreviewCanvas() {
   const handlePostToFacebook = async () => {
     setPostingFB(true)
     try {
-      const html2canvas = (await import('html2canvas')).default
+      const { toBlob } = await import('html-to-image')
       const el = cardRef.current
       if (!el) return
       
       await document.fonts.ready
       await new Promise(r => setTimeout(r, 100))
 
-      const canvas = await html2canvas(el, { scale: 3, useCORS: true, logging: true })
-      const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'))
+      const blob = await toBlob(el, { pixelRatio: 3 })
       if (!blob) throw new Error('Canvas capture failed')
 
       const formData = new FormData()
@@ -190,6 +188,7 @@ export default function PreviewCanvas() {
             ref={cardRef}
             template={template} 
             cardData={cardData} 
+            forExport={exporting}
             onPhotoChange={(id, patch) => updatePhotoById(id, patch)}
             onBlurChange={(id, patch) => updateBlurRegion(id, patch)}
             onBlurRemove={(id) => removeBlurRegion(id)}

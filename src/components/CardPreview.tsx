@@ -242,11 +242,13 @@ function HeadlineBlock({ style, headline, subheadline, flex }: {
   )
 }
 
-function BlurBox({ id, x, y, width, height, blur = 16 }: { id: string, x: number, y: number, width: number, height: number, blur?: number }) {
+function BlurBox({ id, x, y, width, height, blur = 16, forExport = false }: { id: string, x: number, y: number, width: number, height: number, blur?: number, forExport?: boolean }) {
   const { isInteractive, onBlurChange, onBlurRemove } = React.useContext(InteractionContext)
   const isDragging = React.useRef(false)
   const isResizing = React.useRef(false)
   const startMouse = React.useRef({ x: 0, y: 0 })
+
+  const shouldShowControls = isInteractive && !forExport
 
   const handleDown = (e: React.PointerEvent, type: 'move' | 'resize') => {
     if (!isInteractive) return
@@ -296,9 +298,9 @@ function BlurBox({ id, x, y, width, height, blur = 16 }: { id: string, x: number
         backdropFilter: `blur(${blur}px)`,
         WebkitBackdropFilter: `blur(${blur}px)`,
         backgroundColor: 'rgba(255,255,255,0.02)',
-        boxShadow: isInteractive ? '0 0.5cqw 1.5cqw rgba(0,0,0,0.3)' : 'none',
+        boxShadow: shouldShowControls ? '0 0.5cqw 1.5cqw rgba(0,0,0,0.3)' : 'none',
         borderRadius: '1.2cqw',
-        cursor: isInteractive ? 'move' : 'default',
+        cursor: shouldShowControls ? 'move' : 'default',
         zIndex: 50,
         display: 'flex',
         alignItems: 'center',
@@ -306,12 +308,7 @@ function BlurBox({ id, x, y, width, height, blur = 16 }: { id: string, x: number
         overflow: 'visible'
       }}
     >
-      {/* Fallback for html2canvas which doesn't support backdrop-filter */}
-      <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: -1 }}>
-        <rect width="100%" height="100%" rx="1.2cqw" ry="1.2cqw" fill="rgba(255,255,255,0.3)" filter={`url(#svgBlurFilter-${blur})`} />
-      </svg>
-
-      {isInteractive && (
+      {shouldShowControls && (
         <>
           <button 
             onClick={(e) => { e.stopPropagation(); onBlurRemove(id); }}
@@ -363,28 +360,12 @@ const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardDat
   const p = cardData.photos || []
   const blurRegions = cardData.blurRegions || []
 
-  // Global SVG filter for html2canvas compatibility
-  const BlurFilters = () => {
-    // Collect all unique blur values used in the card
-    const blurValues = Array.from(new Set(blurRegions.map(b => b.blur || 16)))
-    return (
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <defs>
-          {blurValues.map(v => (
-            <filter id={`svgBlurFilter-${v}`} key={v}>
-              <feGaussianBlur stdDeviation={v * 0.75} />
-            </filter>
-          ))}
-        </defs>
-      </svg>
-    )
-  }
 
   // Wrap layouts to include blur regions
   const withBlurs = (children: React.ReactNode) => (
     <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {children}
-      {blurRegions.map(br => <BlurBox key={br.id} {...br} />)}
+      {blurRegions.map(br => <BlurBox key={br.id} {...br} forExport={forExport} />)}
     </div>
   )
 
@@ -827,12 +808,11 @@ const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardDat
       }}
     >
       <InteractionContext.Provider value={{ 
-        isInteractive: !!onPhotoChange, 
+        isInteractive: !!onPhotoChange && !forExport, 
         onPhotoChange: onPhotoChange || (() => {}),
         onBlurChange: onBlurChange || (() => {}),
         onBlurRemove: onBlurRemove || (() => {})
       }}>
-        <BlurFilters />
         {withBlurs(renderLayout())}
       </InteractionContext.Provider>
       {style.showWatermark && cardData.watermarkText && (

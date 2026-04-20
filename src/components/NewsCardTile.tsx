@@ -74,14 +74,14 @@ export default function NewsCardTile({ headline, imageUrl, articleUrl, category,
       if (text.includes('বনাম') || text.includes('vs')) return 'versus-debate'
       return 'single-news'
     }
-    if (cat.includes('বিনোদন') || cat.includes('বিনোদন') || cat.includes('entertainment') || cat.includes('গান') || cat.includes('সিনেমা')) {
+    if (cat.includes('বিনোদন') || cat.includes('entertainment') || cat.includes('গান') || cat.includes('সিনেমা')) {
       return 'news-reel'
     }
     if (cat.includes('মতামত') || cat.includes('সম্পাদকীয়') || cat.includes('opinion') || cat.includes('editorial')) {
       return 'editorial-gold'
     }
-    if (cat.includes('অপরাধ') || cat.includes('ক্রাইম') || cat.includes('crime')) {
-      return 'impact-carbon'
+    if (cat.includes('অপরাধ') || cat.includes('ক্রাইম') || cat.includes('crime') || cat.includes('durghotona')) {
+      return 'breaking-ribbon'
     }
     if (cat.includes('প্রযুক্তি') || cat.includes('tech') || cat.includes('বিজ্ঞান') || cat.includes('science')) {
       return 'side-story'
@@ -89,55 +89,59 @@ export default function NewsCardTile({ headline, imageUrl, articleUrl, category,
     if (cat.includes('বাণিজ্য') || cat.includes('অর্থনীতি') || cat.includes('business') || cat.includes('economy')) {
       return 'stat-fact'
     }
+    if (cat.includes('স্বাস্থ্য') || cat.includes('health') || cat.includes('lifestyle')) {
+      return 'modern-duo'
+    }
 
     // 1. HIGH-IMPACT / BREAKING / CRISIS (Urgent news)
     const impactKeywords = [
       'ব্রেকিং', 'নিহত', 'হামলা', 'গ্রেপ্তার', 'মামলা', 'আগুন', 'আটক', 'মৃত্যু',
       'বিস্ফোরণ', 'অভিযান', 'উদ্ধার', 'ভূমিকম্প', 'নিখোঁজ', 'ধর্ষণ', 'খুন',
       'অবরোধ', 'হরতাল', 'সংঘর্ষ', 'গুলি', 'দুর্ঘটনা', 'অগ্নিকাণ্ড', 'নিখোঁজ',
-      'আহত', 'রক্তাক্ত', 'তদন্ত', 'সতর্কবার্তা', 'জরুরি', 'কারাদণ্ড', 'ফাঁসি'
+      'আহত', 'রক্তাক্ত', 'তদন্ত', 'সতর্কবার্তা', 'জরুরি', 'কারাদণ্ড', 'ফাঁসি',
+      'মারা গেছেন', 'নিখোঁজ', 'ধ্বস', 'ভয়াবহ'
     ]
     if (impactKeywords.some(k => text.includes(k))) {
-      return 'impact-carbon' // Bold, aggressive look
+      return 'breaking-ribbon' 
     }
 
-    // 2. VERSUS / RIVALRY (Sports or Political showdowns)
-    const vsKeywords = ['বনাম', 'লড়াই', 'মুখোমুখি', 'দ্বন্দ্ব', 'ভার্সেস', 'vs', 'দ্বৈরথ']
+    // 2. POLITICS / GOVERNANCE
+    const politicsKeywords = [
+      'প্রধানমন্ত্রী', 'হাসিনা', 'খালেদা', 'তারেক', 'আওয়ামী লীগ', 'বিএনপি', 'নির্বাচন',
+      'সংসদ', 'মন্ত্রী', 'বৈঠক', 'রাজনৈতিক', 'দল', 'আন্দোলন', 'সরকার', 'রাষ্ট্রপতি',
+      'ইউনূস', 'উপদেষ্টা'
+    ]
+    if (politicsKeywords.some(k => text.includes(k))) {
+      return 'single-news' // Standard blue look for serious news
+    }
+
+    // 3. VERSUS / RIVALRY
+    const vsKeywords = ['বনাম', 'লড়াই', 'মুখোমুখি', 'দ্বন্দ্ব', 'ভার্সেস', 'vs', 'দ্বৈরথ', 'পাল্টাপাল্টি']
     if (vsKeywords.some(k => text.includes(k))) {
       return 'versus-debate'
     }
 
-    // 3. SPORTS GENERAL
-    const sportsKeywords = [
-      'ফুটবল', 'ক্রিকেট', 'বিশ্বকাপ', 'আইপিএল', 'বিপিএল', 'সিরিজ', 'টুর্নামেন্ট',
-      'মেসি', 'নেইমার', 'এমবাপ্পে', 'কোহলি', 'সাকিব', 'তামিম', 'মুশফিক', 
-      'মাশরাফি', 'হ্যাটট্রিক', 'সেঞ্চুরি', 'উইকেট', 'চ্যাম্পিয়ন', 'ফাইনাল'
-    ]
-    if (sportsKeywords.some(k => text.includes(k))) {
-      return 'single-news' // Professional blue theme
-    }
-
-    // 4. ENTERTAINMENT / CELEBRITY / LIFESTYLE
+    // 4. ENTERTAINMENT / CELEBRITY
     const entertainmentKeywords = [
       'বিনোদন', 'সিনেমা', 'বলিউড', 'হলিউড', 'শাকিব', 'পরিমণি', 'তারকা',
       'উৎসব', 'ঈদ', 'গান', 'ভাইরাল', 'ভিডিও', 'নাটক', 'অভিনেতা', 'অভিনেত্রী',
       'জয়া আহসান', 'ট্রল', 'টিজার', 'ট্রেইলার', 'মুক্তি', 'কনসার্ট', 'জন্মদিন'
     ]
     if (entertainmentKeywords.some(k => text.includes(k))) {
-      return 'news-reel' // Glassy, mobile-first look
+      return 'news-reel'
     }
 
-    // 5. DATA / ECONOMY / STATISTICS
+    // 5. DATA / ECONOMY
     const statKeywords = [
       'শতাংশ', 'কোটি', 'লাখ', 'হাজার', 'গুণ', 'দাম বেড়েছে', 'দাম কমেছে', 'সূচক',
       'শেয়ারবাজার', 'বাজেট', 'রিজার্ভ', 'ডলার', 'রাজস্ব', 'ট্যাক্স', 'শুল্ক',
       'দ্রব্যমূল্য', 'বাজারদর', 'রেকর্ড', 'সর্বোচ্চ', 'সর্বনিম্ন'
     ]
     if (statKeywords.some(k => text.includes(k))) {
-      return 'stat-fact' // Highlights numbers
+      return 'stat-fact'
     }
 
-    // 6. QUOTES / INTERVIEWS / OPINIONS
+    // 6. QUOTES / INTERVIEWS
     const quoteKeywords = [
       'বললেন', 'জানালেন', 'মন্তব্য', 'দাবি', 'আহ্বান', 'বলছেন', 'সাক্ষাৎকার',
       'প্রশ্ন', 'উত্তর', 'অভিযোগ', 'আশ্বাস', 'ঘোষণা', 'অঙ্গীকার'
@@ -152,28 +156,35 @@ export default function NewsCardTile({ headline, imageUrl, articleUrl, category,
       return 'poll-voting'
     }
 
-    // 8. LIFESTYLE / ENVIRONMENT / TECH (Green/Nature)
+    // 8. WORLD NEWS
+    const worldKeywords = ['বিশ্ব', 'আন্তর্জাতিক', 'যুক্তরাষ্ট্র', 'চীন', 'ভারত', 'পাকিস্তান', 'গাজা', 'ইসরায়েল', 'রাশিয়া', 'ইউক্রেন', 'বাইডেন', 'ট্রাম্প', 'মোদি']
+    if (worldKeywords.some(k => text.includes(k))) {
+      return 'portrait-editorial' // Distinctive layout for global stories
+    }
+
+    // 9. LIFESTYLE / TECH / ENVIRONMENT
     const natureKeywords = [
       'জলবায়ু', 'আবহাওয়া', 'পরিবেশ', 'প্রযুক্তি', 'স্মার্টফোন', 'আইফোন',
       'রোবট', 'চাঁদ', 'মহাকাশ', 'বিদ্যুৎ', 'গ্যাস', 'বৃষ্টি', 'ঝড়', 
-      'বন্যা', 'রোদ', 'শীত', 'গরম', 'প্রাকৃতিক', 'বৃক্ষরোপণ'
+      'বন্যা', 'রোদ', 'শীত', 'গরম', 'প্রাকৃতিক', 'বৃক্ষরোপণ', 'খাবার', 'ভ্রমণ'
     ]
     if (natureKeywords.some(k => text.includes(k))) {
-      return 'side-story' // Green accent theme
+      return 'side-story'
     }
 
-    // 9. EDITORIAL / ANALYSIS / LONG STORIES
-    if (len > 75 || text.includes('বিশ্লেষণ') || text.includes('নেপথ্য') || text.includes('ইতিহাস')) {
-      return 'editorial-gold' // High-end serif look
+    // 10. EDITORIAL / ANALYSIS
+    if (len > 80 || text.includes('বিশ্লেষণ') || text.includes('নেপথ্য') || text.includes('ইতিহাস')) {
+      return 'editorial-gold'
     }
 
-    // 10. MINIMAL / SHORT NEWS
+    // 11. MINIMAL / SHORT NEWS
     if (len < 35) {
       return 'minimal-white'
     }
 
-    // Fallback
-    return 'single-news'
+    // DEFAULT VARIETY (Rotate based on index if no specific match)
+    const fallbacks: string[] = ['single-news', 'minimal-split', 'single-bottom']
+    return fallbacks[index % fallbacks.length]
   }
 
   const generateCard = async (forceTemplateId?: string) => {
