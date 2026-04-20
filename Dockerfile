@@ -43,8 +43,6 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-
 # Setup runner permissions
 RUN mkdir -p .next public/exports
 RUN chown -R nextjs:nodejs .next public/exports

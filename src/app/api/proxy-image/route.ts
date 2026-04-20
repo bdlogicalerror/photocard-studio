@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     return new Response(buffer, {
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=60, must-revalidate',
         'Access-Control-Allow-Origin': '*',
       },
     })

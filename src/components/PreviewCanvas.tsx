@@ -22,13 +22,13 @@ export default function PreviewCanvas() {
       const el = cardRef.current
       if (!el) return
 
-      // Wait for fonts and a small layout settle
       await document.fonts.ready
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setTimeout(r, 400)) // Increased delay for layout/image settle
 
       const dataUrl = await toPng(el, {
         pixelRatio: 3,
         backgroundColor: '#ffffff',
+        cacheBust: true, // Prevent stale images
       })
       
       const link = document.createElement('a')
@@ -50,11 +50,12 @@ export default function PreviewCanvas() {
       if (!el) return
 
       await document.fonts.ready
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setTimeout(r, 400))
 
       const blob = await toBlob(el, {
         pixelRatio: 3,
         backgroundColor: '#ffffff',
+        cacheBust: true,
       })
       if (!blob) throw new Error('Share capture failed')
 
@@ -90,9 +91,12 @@ export default function PreviewCanvas() {
       if (!el) return
       
       await document.fonts.ready
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise(r => setTimeout(r, 400))
 
-      const blob = await toBlob(el, { pixelRatio: 3 })
+      const blob = await toBlob(el, { 
+        pixelRatio: 3,
+        cacheBust: true
+      })
       if (!blob) throw new Error('Canvas capture failed')
 
       const formData = new FormData()
@@ -185,6 +189,7 @@ export default function PreviewCanvas() {
           }}
         >
           <CardPreview 
+            key={`${cardData.headline}-${cardData.photos[0]?.src || 'no-photo'}`}
             ref={cardRef}
             template={template} 
             cardData={cardData} 

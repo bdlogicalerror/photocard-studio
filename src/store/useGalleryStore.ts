@@ -21,9 +21,10 @@ type GalleryStore = {
   prothomAlo: GallerySourceState
   bd24live: GallerySourceState
   abpLive: GallerySourceState
+  drb: GallerySourceState
   cardStates: Record<string, GalleryCardState>
 
-  updateSource: (source: 'prothomAlo' | 'bd24live' | 'abpLive', patch: Partial<GallerySourceState>) => void
+  updateSource: (source: 'prothomAlo' | 'bd24live' | 'abpLive' | 'drb', patch: Partial<GallerySourceState>) => void
   updateCardState: (uniqueKey: string, patch: Partial<GalleryCardState>) => void
 }
 
@@ -41,6 +42,7 @@ export const useGalleryStore = create<GalleryStore>((set) => ({
   prothomAlo: { news: [], currentIndex: 0, hasFetched: false },
   bd24live: { news: [], currentIndex: 0, hasFetched: false },
   abpLive: { news: [], currentIndex: 0, hasFetched: false },
+  drb: { news: [], currentIndex: 0, hasFetched: false },
   cardStates: {},
 
   updateSource: (source, patch) => 

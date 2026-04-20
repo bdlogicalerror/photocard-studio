@@ -334,7 +334,8 @@ export default function NewsCardTile({ headline, imageUrl, articleUrl, category,
       ]
     })
 
-    router.push('/')
+    // Force a full reload to clear any stale React state/refs from previous cards
+    window.location.href = '/'
   }
 
   return (
