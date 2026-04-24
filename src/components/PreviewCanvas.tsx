@@ -3,10 +3,10 @@
 import { useRef, useState } from 'react'
 import { useStore, useActiveTemplate } from '@/store/useStore'
 import CardPreview from './CardPreview'
-import { Download, ZoomIn, ZoomOut, Maximize2, Facebook, Share2 } from 'lucide-react'
+import { Download, Share2, ChevronDown, Undo, Redo, Trash2, Settings } from 'lucide-react'
 
 export default function PreviewCanvas() {
-  const { cardData, updatePhotoById, updateBlurRegion, removeBlurRegion } = useStore()
+  const { cardData, updatePhotoById, updateBlurRegion, removeBlurRegion, updateCustomLayer, removeCustomLayer } = useStore()
   const template = useActiveTemplate()
   const [exporting, setExporting] = useState(false)
   const [zoom, setZoom] = useState(100)
@@ -122,55 +122,49 @@ export default function PreviewCanvas() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0d0d0d] min-w-0 overflow-hidden">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 md:px-5 py-2 md:py-3 gap-2 border-b border-zinc-800">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setZoom(z => Math.max(40, z - 10))}
-            className="w-7 h-7 flex items-center justify-center rounded text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
-          >
-            <ZoomOut size={14} />
-          </button>
-          <span className="text-[10px] md:text-xs text-zinc-500 w-8 md:w-10 text-center">{zoom}%</span>
-          <button
-            onClick={() => setZoom(z => Math.min(150, z + 10))}
-            className="w-7 h-7 flex items-center justify-center rounded text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors"
-          >
-            <ZoomIn size={14} />
+    <div className="flex-1 flex flex-col bg-[#14141A] min-w-0 overflow-hidden border-t border-zinc-800/50 md:border-none">
+      {/* Top Action Bar */}
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-zinc-800/50 bg-[#1E1E24]">
+        {/* Left: Project Name */}
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800/50 p-1.5 rounded transition-colors">
+          <span className="text-white font-medium text-xs md:text-sm tracking-wide">newscards.xyz</span>
+          <ChevronDown size={14} className="text-zinc-500" />
+        </div>
+
+        {/* Center: Actions */}
+        <div className="hidden md:flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
+          <div className="flex items-center gap-2 text-zinc-400">
+            <button className="p-1.5 hover:text-white hover:bg-zinc-700/50 rounded transition-colors"><Undo size={16} /></button>
+            <button className="p-1.5 hover:text-white hover:bg-zinc-700/50 rounded transition-colors"><Redo size={16} /></button>
+            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
+            <button className="p-1.5 hover:text-red-400 hover:bg-zinc-700/50 rounded transition-colors"><Trash2 size={16} /></button>
+          </div>
+          <button className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-6 py-1.5 rounded-md transition-colors shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+            Save
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] md:text-[11px] text-zinc-600 hidden xs:inline">1080 × 1080 px</span>
-          <button
-            onClick={handlePostToFacebook}
-            disabled={postingFB}
-            className={`flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded disabled:opacity-50 text-white text-[10px] md:text-xs font-medium transition-all ${
-              fbPostUrl ? 'bg-green-600' : 'bg-[#1877F2] hover:bg-[#166fe5]'
-            }`}
-          >
-            <Facebook size={12} className={postingFB ? 'animate-pulse' : ''} />
-            <span className="whitespace-nowrap">
-              {postingFB ? 'Posting...' : fbPostUrl ? 'Posted!' : 'Post to Page'}
-            </span>
+        {/* Right: Export/Share */}
+        <div className="flex items-center gap-3">
+          <button className="hidden md:flex p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700/50 rounded transition-colors">
+            <Settings size={16} />
           </button>
           <button
             onClick={handleShare}
             disabled={exporting}
-            className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white text-[10px] md:text-xs font-medium transition-colors border border-zinc-700"
+            className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-lg border border-zinc-700 hover:bg-zinc-800 disabled:opacity-50 text-white text-xs font-medium transition-colors"
           >
-            <Share2 size={12} className="md:w-[13px] md:h-[13px]" />
-            <span className="whitespace-nowrap text-zinc-300">Share</span>
+            <Share2 size={14} />
+            <span className="hidden sm:inline">Share</span>
           </button>
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white text-[10px] md:text-xs font-medium transition-colors border border-zinc-700"
+            className="flex items-center gap-2 px-3 md:px-4 py-1.5 rounded-lg bg-zinc-100 hover:bg-white disabled:opacity-50 text-zinc-900 text-xs font-bold transition-colors"
           >
-            <Download size={12} className="md:w-[13px] md:h-[13px]" />
+            <Download size={14} />
             {exporting ? '...' : (
-              <span className="whitespace-nowrap text-zinc-300">PNG</span>
+              <span>Export</span>
             )}
           </button>
         </div>
@@ -197,20 +191,36 @@ export default function PreviewCanvas() {
             onPhotoChange={(id, patch) => updatePhotoById(id, patch)}
             onBlurChange={(id, patch) => updateBlurRegion(id, patch)}
             onBlurRemove={(id) => removeBlurRegion(id)}
+            onCustomLayerChange={(id, patch) => updateCustomLayer(id, patch)}
+            onCustomLayerRemove={(id) => removeCustomLayer(id)}
           />
         </div>
       </div>
 
-      {/* Bottom info bar */}
-      <div className="px-5 py-2 border-t border-zinc-800 flex items-center justify-between">
-        <span className="text-[10px] text-zinc-600">
-          Template: <span className="text-zinc-400">{template.name}</span>
-          {' · '}
-          Layout: <span className="text-zinc-400">{template.layout}</span>
-          {' · '}
-          Photos: <span className="text-zinc-400">{template.photoCount}</span>
-        </span>
-        <span className="text-[10px] text-zinc-600">Output: 3240 × 3240 px (3× scale)</span>
+      <div className="px-5 py-2.5 border-t border-zinc-800/50 flex items-center justify-between bg-[#1E1E24]">
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] font-medium text-zinc-400 bg-zinc-800/50 px-2 py-1 rounded">
+            {template.layout}
+          </span>
+          <span className="text-[11px] text-zinc-500">
+            {template.photoCount} Photo{template.photoCount > 1 ? 's' : ''}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setZoom(z => Math.max(40, z - 10))}
+            className="text-zinc-500 hover:text-white"
+          >
+            -
+          </button>
+          <span className="text-[10px] text-zinc-500 w-8 text-center">{zoom}%</span>
+          <button
+            onClick={() => setZoom(z => Math.min(150, z + 10))}
+            className="text-zinc-500 hover:text-white"
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   )

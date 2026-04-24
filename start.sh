@@ -4,10 +4,17 @@
 INTERFACE=$(route get default | grep interface | awk '{print $2}')
 LOCAL_IP=$(ipconfig getifaddr $INTERFACE)
 
+# Load .env if it exists
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+PORT=${PORT:-3001}
+
 if [ -z "$LOCAL_IP" ]; then
-    export PUBLIC_URL="http://localhost:3000"
+    export PUBLIC_URL="http://localhost:$PORT"
 else
-    export PUBLIC_URL="http://$LOCAL_IP:3000"
+    export PUBLIC_URL="http://$LOCAL_IP:$PORT"
 fi
 
 case "$1" in

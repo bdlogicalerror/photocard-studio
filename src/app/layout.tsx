@@ -2,6 +2,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
+import { LanguageProvider } from '@/store/LanguageContext'
+
 export const metadata: Metadata = {
   title: 'Photocard Studio',
   description: 'Bengali news photocard generator with multiple templates',
@@ -18,8 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="bg-zinc-950 text-white antialiased overflow-hidden h-screen w-screen flex flex-col">
-        {children}
+      <body className="bg-zinc-950 text-white antialiased min-h-screen flex flex-col">
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   )

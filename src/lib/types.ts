@@ -16,6 +16,16 @@ export type BlurRegion = {
   blur: number   // blur intensity in px
 }
 
+export type CustomLayer = {
+  id: string
+  src: string
+  x: number
+  y: number
+  width: number
+  height: number
+  opacity: number
+}
+
 export type TemplateLayout =
   | 'single-top'       // 1 photo top, text bottom
   | 'single-bottom'    // text top, 1 photo bottom
@@ -80,6 +90,10 @@ export type CardData = {
   pollOptions?: [string, string]
   photos: PhotoSlot[]
   blurRegions: BlurRegion[]
+  customLayers: CustomLayer[]
+  sponsorLogo?: string // Fixed bottom logo
+  sponsorLogoScale?: number // 0.1 - 2.0
+  sponsorLogoAlign?: 'left' | 'center' | 'right'
 }
 
 export const DEFAULT_STYLE: TemplateStyle = {
@@ -107,19 +121,24 @@ export const DEFAULT_STYLE: TemplateStyle = {
 }
 
 export const DEFAULT_CARD_DATA: CardData = {
-  headline: 'সবাই সংসদে গেলে আমার গাড়ির পিছনে দৌড়াবে কে?',
-  subheadline: 'আবিদকে উদ্দেশ্য করে তারেক রহমান',
-  brandName: 'মুজিব বাহিনী',
-  handle: 'মুজিব বাহিনী',
-  website: 'মুজিব বাহিনী',
-  adText: '',
-  watermarkText: 'মুজিব বাহিনী',
+  headline: 'রাজধানীতে তীব্র যানজট, ভোগান্তিতে নগরবাসী',
+  subheadline: 'অফিসগামী মানুষ ও স্কুল শিক্ষার্থীরা সবচেয়ে বেশি বিপাকে পড়েছেন',
+  brandName: 'NewsCards',
+  handle: '@newscards',
+  website: 'newscards.xyz',
+  adText: 'বিজ্ঞাপন',
+  watermarkText: 'newscards.xyz',
+  source: 'NewsCards',
   pollOptions: ['হ্যাঁ', 'না'],
   photos: [
-    { id: 'p1', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
-    { id: 'p2', src: null, objectPosition: 'center', objectFit: 'cover', scale: 1 },
+    { id: 'p1', src: 'https://images.unsplash.com/photo-1610996849887-88283832e8f1?q=80&w=1200&auto=format&fit=crop', objectPosition: 'center', objectFit: 'cover', scale: 1 },
+    { id: 'p2', src: 'https://images.unsplash.com/photo-1596700673434-c71b7b7524bb?q=80&w=1200&auto=format&fit=crop', objectPosition: 'center', objectFit: 'cover', scale: 1 },
   ],
   blurRegions: [],
+  customLayers: [],
+  sponsorLogo: undefined,
+  sponsorLogoScale: 1.0,
+  sponsorLogoAlign: 'right',
 }
 
 export const BUILT_IN_TEMPLATES: Template[] = [

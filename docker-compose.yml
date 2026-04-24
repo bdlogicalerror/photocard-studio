@@ -3,20 +3,13 @@ services:
     container_name: photocard
     build: .
     ports:
-      - "3000:3000"
+      - "${PORT:-3001}:${PORT:-3001}"
     volumes:
       - ./exports:/app/public/exports
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=${PORT:-3001}
       - HOSTNAME=0.0.0.0
-      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:3000}
-      - PHOTOCARD_API_URL=http://photocard:3000/api/generate
-    restart: unless-stopped
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: photocard-tunnel
-    command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-    network_mode: service:photocard-studio
+      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:${PORT:-3001}}
+      - PHOTOCARD_API_URL=http://photocard:${PORT:-3001}/api/generate
     restart: unless-stopped

@@ -8,11 +8,11 @@ export default function Header() {
   const pathname = usePathname()
 
   const navItems = [
-    { name: 'Studio', href: '/', icon: Layers },
-    { name: 'Prothom Alo', href: '/news/prothom-alo', icon: Newspaper },
-    { name: 'BD24Live', href: '/news/bd24live', icon: Newspaper },
-    { name: 'ABP Live (IN)', href: '/news/abp-live', icon: Newspaper },
-    { name: 'Daily Rangpur', href: '/news/drb', icon: Newspaper },
+    { name: 'Studio', href: '/studio', icon: Layers },
+    { name: 'Prothom Alo', href: '/studio/news/prothom-alo', icon: Newspaper },
+    { name: 'BD24Live', href: '/studio/news/bd24live', icon: Newspaper },
+    { name: 'ABP Live (IN)', href: '/studio/news/abp-live', icon: Newspaper },
+    { name: 'Daily Rangpur', href: '/studio/news/drb', icon: Newspaper },
   ]
 
   return (

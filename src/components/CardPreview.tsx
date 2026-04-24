@@ -11,6 +11,8 @@ type Props = {
   onPhotoChange?: (id: string, patch: any) => void
   onBlurChange?: (id: string, patch: any) => void
   onBlurRemove?: (id: string) => void
+  onCustomLayerChange?: (id: string, patch: any) => void
+  onCustomLayerRemove?: (id: string) => void
 }
 
 const fontMap: Record<string, string> = {
@@ -50,7 +52,9 @@ const InteractionContext = React.createContext({
   isInteractive: false,
   onPhotoChange: (id: string, patch: any) => {},
   onBlurChange: (id: string, patch: any) => {},
-  onBlurRemove: (id: string) => {}
+  onBlurRemove: (id: string) => {},
+  onCustomLayerChange: (id: string, patch: any) => {},
+  onCustomLayerRemove: (id: string) => {}
 })
 
 function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale = 1, placeholder, id }: {
@@ -355,17 +359,138 @@ function BlurBox({ id, x, y, width, height, blur = 16, forExport = false }: { id
   )
 }
 
-const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardData, forExport = false, onPhotoChange, onBlurChange, onBlurRemove }, ref) => {
+function CustomBox({ id, src, x, y, width, height, opacity = 1, forExport = false }: { id: string, src: string, x: number, y: number, width: number, height: number, opacity?: number, forExport?: boolean }) {
+  const { isInteractive, onCustomLayerChange, onCustomLayerRemove } = React.useContext(InteractionContext)
+  const isDragging = React.useRef(false)
+  const isResizing = React.useRef(false)
+  const startMouse = React.useRef({ x: 0, y: 0 })
+
+  const shouldShowControls = isInteractive && !forExport
+
+  const handleDown = (e: React.PointerEvent, type: 'move' | 'resize') => {
+    if (!isInteractive) return
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    if (type === 'move') isDragging.current = true
+    else isResizing.current = true
+    startMouse.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handleMove = (e: React.PointerEvent) => {
+    if (!isDragging.current && !isResizing.current) return
+    const dx = e.clientX - startMouse.current.x
+    const dy = e.clientY - startMouse.current.y
+    startMouse.current = { x: e.clientX, y: e.clientY }
+
+    const rect = e.currentTarget.parentElement?.getBoundingClientRect()
+    if (!rect) return
+
+    const pdx = (dx / rect.width) * 100
+    const pdy = (dy / rect.height) * 100
+
+    if (isDragging.current) {
+      onCustomLayerChange(id, { x: Math.max(0, Math.min(100 - width, x + pdx)), y: Math.max(0, Math.min(100 - height, y + pdy)) })
+    } else {
+      onCustomLayerChange(id, { width: Math.max(2, width + pdx), height: Math.max(2, height + pdy) })
+    }
+  }
+
+  const handleUp = (e: React.PointerEvent) => {
+    isDragging.current = false
+    isResizing.current = false
+    e.currentTarget.releasePointerCapture(e.pointerId)
+  }
+
+  return (
+    <div
+      onPointerDown={(e) => handleDown(e, 'move')}
+      onPointerMove={handleMove}
+      onPointerUp={handleUp}
+      style={{
+        position: 'absolute',
+        left: `${x}%`,
+        top: `${y}%`,
+        width: `${width}%`,
+        height: `${height}%`,
+        opacity,
+        cursor: shouldShowControls ? 'move' : 'default',
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none'
+      }}
+    >
+      <img src={src} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />
+      {shouldShowControls && (
+        <>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onCustomLayerRemove(id); }}
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{ 
+              position: 'absolute', top: -10, right: -10, 
+              background: '#ef4444', color: '#fff', 
+              borderRadius: '50%', width: 20, height: 20, 
+              fontSize: 10, border: '2px solid white', 
+              cursor: 'pointer', zIndex: 110,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }}
+          >
+            ✕
+          </button>
+          <div 
+            onPointerDown={(e) => handleDown(e, 'resize')}
+            style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, cursor: 'nwse-resize', background: 'rgba(255,255,255,0.7)', clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardData, forExport = false, onPhotoChange, onBlurChange, onBlurRemove, onCustomLayerChange, onCustomLayerRemove }, ref) => {
   const { style, layout, photoCount } = template
   const p = cardData.photos || []
   const blurRegions = cardData.blurRegions || []
+  const customLayers = cardData.customLayers || []
 
-
-  // Wrap layouts to include blur regions
-  const withBlurs = (children: React.ReactNode) => (
+  // Wrap layouts to include blur regions and custom layers
+  const withLayers = (children: React.ReactNode) => (
     <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {children}
       {blurRegions.map(br => <BlurBox key={br.id} {...br} forExport={forExport} />)}
+      {customLayers.map(cl => <CustomBox key={cl.id} {...cl} forExport={forExport} />)}
+      
+      {/* Fixed Sponsor Logo Area */}
+      {cardData.sponsorLogo && (
+        <div style={{
+          position: 'absolute',
+          bottom: '2%',
+          left: '2%',
+          right: '2%',
+          height: '12%', // Fixed area for branding
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 
+            cardData.sponsorLogoAlign === 'left' ? 'flex-start' : 
+            cardData.sponsorLogoAlign === 'center' ? 'center' : 'flex-end',
+          pointerEvents: 'none',
+          zIndex: 150
+        }}>
+          <div style={{
+            height: '100%',
+            width: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            transform: `scale(${cardData.sponsorLogoScale || 1})`,
+            transformOrigin: 
+              cardData.sponsorLogoAlign === 'left' ? 'left center' : 
+              cardData.sponsorLogoAlign === 'center' ? 'center center' : 'right center',
+          }}>
+            <img src={cardData.sponsorLogo} crossOrigin="anonymous" style={{ maxHeight: '100%', width: 'auto', objectFit: 'contain' }} />
+          </div>
+        </div>
+      )}
     </div>
   )
 
@@ -792,29 +917,30 @@ const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardDat
   }
 
   return (
-    <div
-      ref={ref}
-      style={{
-        width: '100%',
-        aspectRatio: '1 / 1',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        background: '#fff',
-        borderRadius: `calc(${style.borderRadius / 8}cqw)`,
-        fontFamily: fontMap[style.fontFamily],
-        position: 'relative',
-        containerType: 'inline-size',
-      }}
-    >
-      <InteractionContext.Provider value={{ 
-        isInteractive: !!onPhotoChange && !forExport, 
-        onPhotoChange: onPhotoChange || (() => {}),
-        onBlurChange: onBlurChange || (() => {}),
-        onBlurRemove: onBlurRemove || (() => {})
-      }}>
-        {withBlurs(renderLayout())}
-      </InteractionContext.Provider>
+    <InteractionContext.Provider value={{ 
+      isInteractive: !forExport, 
+      onPhotoChange: onPhotoChange || (() => {}),
+      onBlurChange: onBlurChange || (() => {}),
+      onBlurRemove: onBlurRemove || (() => {}),
+      onCustomLayerChange: onCustomLayerChange || (() => {}),
+      onCustomLayerRemove: onCustomLayerRemove || (() => {})
+    }}>
+      <div
+        ref={ref}
+        style={{
+          width: '100%',
+          aspectRatio: '1 / 1',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          background: '#fff',
+          borderRadius: `calc(${style.borderRadius / 8}cqw)`,
+          fontFamily: fontMap[style.fontFamily],
+          position: 'relative',
+          containerType: 'inline-size',
+        }}
+      >
+        {withLayers(renderLayout())}
       {style.showWatermark && cardData.watermarkText && (
         <div style={{
           position: 'absolute',
@@ -850,7 +976,8 @@ const CardPreview = React.forwardRef<HTMLDivElement, Props>(({ template, cardDat
       }}>
         {dateStr}
       </div>
-    </div>
+      </div>
+    </InteractionContext.Provider>
   )
 })
 

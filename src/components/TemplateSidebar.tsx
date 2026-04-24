@@ -214,13 +214,52 @@ export default function TemplateSidebar() {
   }
 
   return (
-    <aside className="w-full md:w-56 flex-shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col h-full overflow-hidden pb-16 md:pb-0">
-      <div className="px-4 py-2 md:py-3 border-b border-zinc-800 flex items-center justify-between">
-        <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-zinc-400">Templates</span>
-        <button
-          onClick={() => setShowNewForm(!showNewForm)}
-          className="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-        >
+    <aside className="w-full h-full flex flex-col bg-[#1E1E24] text-zinc-400 overflow-hidden text-sm">
+      {/* Logo Area */}
+      <div className="flex items-center justify-between p-6 border-b border-zinc-800/50">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-zinc-200 to-zinc-500 rounded-lg flex items-center justify-center shadow-lg">
+            <span className="text-zinc-900 font-bold text-xl italic">S</span>
+          </div>
+          <div className="flex flex-col leading-tight">
+            <span className="font-bold text-white tracking-wider">DESIGN</span>
+            <span className="font-light tracking-wider text-xs">STUDIO</span>
+          </div>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 text-white font-medium text-xs">
+          Jb
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <div className="flex flex-col gap-2 p-4">
+        <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-zinc-800/50 transition-colors w-full text-left">
+          <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+          <span className="font-medium tracking-wide text-xs">DASHBOARD</span>
+        </button>
+        <button className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-zinc-800/40 text-white w-full text-left border border-zinc-700/30">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+            <span className="font-medium tracking-wide text-xs">PROJECT</span>
+          </div>
+          <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">Active</span>
+        </button>
+        <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-zinc-800/50 transition-colors w-full text-left">
+          <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+          <span className="font-medium tracking-wide text-xs">TEMPLATES</span>
+        </button>
+        <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-zinc-800/50 transition-colors w-full text-left">
+          <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+          <span className="font-medium tracking-wide text-xs">ASSETS</span>
+        </button>
+      </div>
+
+      <div className="w-full h-px bg-zinc-800/50 my-2"></div>
+
+      {/* Templates List */}
+      <div className="flex items-center justify-between px-6 py-3">
+        <span className="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase">Layouts</span>
+        <button onClick={() => setShowNewForm(!showNewForm)} className="text-zinc-500 hover:text-white transition-colors">
           <Plus size={14} />
         </button>
       </div>
@@ -255,13 +294,15 @@ export default function TemplateSidebar() {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-hide">
         {templates.map(t => (
           <div
             key={t.id}
             className={clsx(
-              'group relative flex items-center gap-2 px-3 py-2.5 cursor-pointer border-b border-zinc-800/50 transition-colors',
-              t.id === activeTemplateId ? 'bg-zinc-800' : 'hover:bg-zinc-900'
+              'group relative flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg cursor-pointer transition-all duration-200 border',
+              t.id === activeTemplateId 
+                ? 'bg-zinc-800/60 border-zinc-700/50 text-white shadow-lg' 
+                : 'border-transparent hover:bg-zinc-800/30 text-zinc-400 hover:text-zinc-200'
             )}
             onClick={() => setActiveTemplate(t.id)}
           >
@@ -298,7 +339,7 @@ export default function TemplateSidebar() {
               </div>
             )}
             {t.id === activeTemplateId && (
-              <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-red-500" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
             )}
           </div>
         ))}

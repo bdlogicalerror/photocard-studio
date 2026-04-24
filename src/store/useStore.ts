@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuid } from 'uuid'
 import {
-  Template, CardData, TemplateStyle, PhotoSlot, BlurRegion,
+  Template, CardData, TemplateStyle, PhotoSlot, BlurRegion, CustomLayer,
   BUILT_IN_TEMPLATES, DEFAULT_CARD_DATA, DEFAULT_STYLE
 } from '@/lib/types'
 
@@ -26,6 +26,11 @@ type Store = {
   addBlurRegion: () => void
   updateBlurRegion: (id: string, patch: Partial<BlurRegion>) => void
   removeBlurRegion: (id: string) => void
+
+  setSponsorLogo: (src: string | undefined) => void
+  addCustomLayer: (src: string) => void
+  updateCustomLayer: (id: string, patch: Partial<CustomLayer>) => void
+  removeCustomLayer: (id: string) => void
   _hasHydrated: boolean
   setHasHydrated: (v: boolean) => void
 }
@@ -99,7 +104,7 @@ export const useStore = create<Store>()(
         })),
 
       resetCardData: () =>
-        set({ cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })), blurRegions: [] } }),
+        set({ cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })), blurRegions: [], customLayers: [], sponsorLogo: undefined } }),
 
       addBlurRegion: () =>
         set(s => {
@@ -127,6 +132,39 @@ export const useStore = create<Store>()(
           cardData: {
             ...s.cardData,
             blurRegions: (s.cardData.blurRegions || []).filter(b => b.id !== id)
+          }
+        })),
+
+      setSponsorLogo: (src) =>
+        set(s => ({ cardData: { ...s.cardData, sponsorLogo: src } })),
+
+      addCustomLayer: (src) =>
+        set(s => {
+          const newLayer: CustomLayer = {
+            id: uuid(),
+            src,
+            x: 10,
+            y: 10,
+            width: 20,
+            height: 10,
+            opacity: 1
+          }
+          return { cardData: { ...s.cardData, customLayers: [...(s.cardData.customLayers || []), newLayer] } }
+        }),
+
+      updateCustomLayer: (id, patch) =>
+        set(s => ({
+          cardData: {
+            ...s.cardData,
+            customLayers: (s.cardData.customLayers || []).map(cl => cl.id === id ? { ...cl, ...patch } : cl)
+          }
+        })),
+
+      removeCustomLayer: (id) =>
+        set(s => ({
+          cardData: {
+            ...s.cardData,
+            customLayers: (s.cardData.customLayers || []).filter(cl => cl.id !== id)
           }
         })),
     }),
