@@ -30,18 +30,47 @@ type Store = {
   addCustomLayer: (src: string) => void
   updateCustomLayer: (id: string, patch: Partial<CustomLayer>) => void
   removeCustomLayer: (id: string) => void
+  fetchTemplates: () => Promise<void>
   _hasHydrated: boolean
   setHasHydrated: (v: boolean) => void
 }
 
+import { supabase } from '@/lib/supabase'
+
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
-      templates: BUILT_IN_TEMPLATES,
-      activeTemplateId: BUILT_IN_TEMPLATES[0].id,
+      templates: [], // Start empty, fetch on hydration
+      activeTemplateId: '',
       cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })) },
       _hasHydrated: false,
       setHasHydrated: (v) => set({ _hasHydrated: v }),
+
+      fetchTemplates: async () => {
+        const { data, error } = await supabase
+          .from('templates')
+          .select('*')
+          .order('created_at', { ascending: true })
+        
+        if (data && !error) {
+          // Map DB snake_case to camelCase
+          const mapped: Template[] = data.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            description: t.description,
+            layout: t.layout,
+            photoCount: t.photo_count,
+            isBuiltIn: t.is_built_in,
+            locked: t.locked,
+            style: t.style
+          }))
+          
+          set({ 
+            templates: mapped,
+            activeTemplateId: get().activeTemplateId || mapped[0]?.id || ''
+          })
+        }
+      },
 
       setActiveTemplate: (id) => set({ activeTemplateId: id }),
 

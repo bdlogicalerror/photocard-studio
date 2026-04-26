@@ -363,6 +363,7 @@
     "layout": "portrait-editorial",
     "photoCount": 1,
     "isBuiltIn": true,
+    "locked": true,
     "style": {
       "accentColor": "#d4af37",
       "backgroundColor": "#fdfcf0",
@@ -396,6 +397,7 @@
     "layout": "impact-hero",
     "photoCount": 1,
     "isBuiltIn": true,
+    "locked": true,
     "style": {
       "accentColor": "#ef4444",
       "backgroundColor": "#0a0a0a",
@@ -429,6 +431,7 @@
     "layout": "news-reel",
     "photoCount": 1,
     "isBuiltIn": true,
+    "locked": true,
     "style": {
       "accentColor": "#38bdf8",
       "backgroundColor": "#0f172a",

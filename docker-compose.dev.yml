@@ -44,7 +44,55 @@ services:
       - TZ=Asia/Dhaka
       - PATH=/venv/bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       - VIRTUAL_ENV=/venv
+      - REDIS_URL=redis://redis:6379
     command: sh -c "[ ! -d /venv/bin ] && python3 -m venv /venv; /venv/bin/pip install -r requirements.txt && /venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port ${BACKEND_PORT} --reload"
+    depends_on:
+      - redis
+    restart: always
+
+  # Redis for Queue
+  redis:
+    image: redis:alpine
+    container_name: newscards-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # Alpine Chrome Renderer
+  chrome:
+    container_name: newscards-chrome
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.chrome
+    ports:
+      - "9222:9222"
+    restart: always
+    shm_size: "1gb"
+
+  # Background Queue Worker
+  worker:
+    container_name: newscards-worker
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/code
+      - ${DOCKER_VOLUME_BASE}/backend/venv:/venv
+      - ${DOCKER_VOLUME_BASE}/backend/pip-cache:/root/.cache/pip
+      - ${DOCKER_VOLUME_BASE}/backend/tmp:/tmp/photocards
+    environment:
+      - ENVIRONMENT=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - TZ=Asia/Dhaka
+      - PATH=/venv/bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - VIRTUAL_ENV=/venv
+      - REDIS_URL=redis://redis:6379
+      - CHROME_WS_URL=http://chrome:9222
+    command: sh -c "[ ! -d /venv/bin ] && python3 -m venv /venv; /venv/bin/pip install -r requirements.txt && /venv/bin/arq worker.WorkerSettings"
+    depends_on:
+      - redis
+      - chrome
     restart: always
 
 networks:

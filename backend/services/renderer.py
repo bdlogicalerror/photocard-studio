@@ -30,10 +30,18 @@ class Renderer:
         
         return ImageFont.truetype(font_path, size)
 
-    async def render_card(self, template: dict, card_data: dict) -> Image.Image:
+    async def render_card(self, template: dict, card_data: dict, variant: str = "square") -> Image.Image:
         style = template.get("style", {})
         layout = template.get("layout", "single-top")
         
+        # Determine canvas size based on variant
+        if variant == "portrait":
+            self.canvas_size = (1080, 1920)
+        elif variant == "landscape":
+            self.canvas_size = (1200, 630)
+        else:
+            self.canvas_size = (1080, 1080)
+
         # Create canvas
         canvas = Image.new("RGB", self.canvas_size, style.get("backgroundColor", "#ffffff"))
         draw = ImageDraw.Draw(canvas)
@@ -44,13 +52,13 @@ class Renderer:
         accent_pos = style.get("accentBarPosition", "top")
         
         if accent_pos == "top":
-            draw.rectangle([0, 0, 1080, accent_height], fill=accent_color)
+            draw.rectangle([0, 0, self.canvas_size[0], accent_height], fill=accent_color)
         elif accent_pos == "bottom":
-            draw.rectangle([0, 1080 - accent_height, 1080, 1080], fill=accent_color)
+            draw.rectangle([0, self.canvas_size[1] - accent_height, self.canvas_size[0], self.canvas_size[1]], fill=accent_color)
 
         # 2. Draw Photo (Assuming single-top for now)
         if layout == "single-top":
-            photo_height = int(1080 * 0.55)
+            photo_height = int(self.canvas_size[1] * 0.55)
             if card_data.get("photos"):
                 photo_url = card_data["photos"][0].get("src")
                 if photo_url:
@@ -59,21 +67,21 @@ class Renderer:
                         img = Image.open(BytesIO(response.content))
                         
                         # Object-fit: cover logic
-                        target_ratio = 1080 / photo_height
+                        target_ratio = self.canvas_size[0] / photo_height
                         img_ratio = img.width / img.height
                         
                         if img_ratio > target_ratio:
                             # Img is wider
                             new_width = int(photo_height * img_ratio)
                             img = img.resize((new_width, photo_height), Image.Resampling.LANCZOS)
-                            left = (new_width - 1080) // 2
-                            img = img.crop((left, 0, left + 1080, photo_height))
+                            left = (new_width - self.canvas_size[0]) // 2
+                            img = img.crop((left, 0, left + self.canvas_size[0], photo_height))
                         else:
                             # Img is taller
-                            new_height = int(1080 / img_ratio)
-                            img = img.resize((1080, new_height), Image.Resampling.LANCZOS)
+                            new_height = int(self.canvas_size[0] / img_ratio)
+                            img = img.resize((self.canvas_size[0], new_height), Image.Resampling.LANCZOS)
                             top = (new_height - photo_height) // 2
-                            img = img.crop((0, top, 1080, top + photo_height))
+                            img = img.crop((0, top, self.canvas_size[0], top + photo_height))
                             
                         canvas.paste(img, (0, accent_height if accent_pos == "top" else 0))
                     except Exception as e:
@@ -89,7 +97,7 @@ class Renderer:
         
         # Headline
         h_color = style.get("headlineColor", "#222222")
-        h_y = int(1080 * 0.55) + padding + (accent_height if accent_pos == "top" else 0)
+        h_y = int(self.canvas_size[1] * 0.55) + padding + (accent_height if accent_pos == "top" else 0)
         
         # Simple wrapping
         wrapped_h = textwrap.fill(headline, width=30) # Rough estimate
@@ -99,10 +107,10 @@ class Renderer:
         if style.get("showBrandBar"):
             bar_bg = style.get("brandBarBg", "#f8f8f8")
             bar_color = style.get("brandColor", "#ed1c24")
-            draw.rectangle([0, 1080 - 120, 1080, 1080], fill=bar_bg)
+            draw.rectangle([0, self.canvas_size[1] - 120, self.canvas_size[0], self.canvas_size[1]], fill=bar_bg)
             
             brand_name = card_data.get("brandName", "News Cards Studio")
-            draw.text((padding, 1080 - 80), brand_name, font=s_font, fill=bar_color)
+            draw.text((padding, self.canvas_size[1] - 80), brand_name, font=s_font, fill=bar_color)
 
         return canvas
 

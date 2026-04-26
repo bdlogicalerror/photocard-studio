@@ -1,0 +1,15 @@
+FROM zenika/alpine-chrome
+
+USER root
+
+# Install required fonts
+RUN apk add --no-cache font-noto-bengali fontconfig \
+    && fc-cache -f
+
+USER chrome
+
+# Expose the remote debugging port
+EXPOSE 9222
+
+# Start chromium in headless mode with remote debugging enabled
+ENTRYPOINT ["chromium-browser", "--headless=new", "--disable-gpu", "--disable-software-rasterizer", "--disable-dev-shm-usage", "--remote-debugging-address=0.0.0.0", "--remote-debugging-port=9222", "--no-sandbox", "--remote-allow-origins=*", "--disable-extensions"]

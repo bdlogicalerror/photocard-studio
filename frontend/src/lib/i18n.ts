@@ -60,7 +60,28 @@ export const translations = {
     contactTitle: 'Contact Support',
     contactDesc: 'Need help or have a feature request? Reach out to our team.',
     emailUs: 'Email us at',
-    followUs: 'Follow us on Twitter'
+    followUs: 'Follow us on Twitter',
+
+    // Dashboard
+    dashboard: 'Dashboard',
+    gallery: 'My Gallery',
+    billing: 'Billing & Plan',
+    settings: 'Settings',
+    logout: 'Logout',
+    profile: 'Profile',
+    savedCards: 'Saved Photocards',
+    recentActivity: 'Recent Activity',
+    activePlan: 'Active Plan',
+    generationLimit: 'Generation Limit',
+    upgradeToPro: 'Upgrade to Pro',
+    pendingApproval: 'Pending Approval',
+    assets: 'Assets',
+    search: 'Search...',
+    noCardsFound: 'No photocards found. Create your first one!',
+    createFirst: 'Create First Card',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    older: 'Older',
   },
   bn: {
     // Nav
@@ -119,6 +140,27 @@ export const translations = {
     contactTitle: 'সাপোর্ট যোগাযোগ',
     contactDesc: 'সাহায্য প্রয়োজন বা কোনো ফিচারের অনুরোধ আছে? আমাদের টিমের সাথে যোগাযোগ করুন।',
     emailUs: 'আমাদের ইমেল করুন',
-    followUs: 'টুইটারে আমাদের ফলো করুন'
+    followUs: 'টুইটারে আমাদের ফলো করুন',
+
+    // Dashboard
+    dashboard: 'ড্যাশবোর্ড',
+    gallery: 'আমার গ্যালারি',
+    billing: 'বিলিং এবং প্ল্যান',
+    settings: 'সেটিংস',
+    logout: 'লগআউট',
+    profile: 'প্রোফাইল',
+    savedCards: 'সংরক্ষিত ফোটোকার্ড',
+    recentActivity: 'সাম্প্রতিক কার্যক্রম',
+    activePlan: 'সক্রিয় প্ল্যান',
+    generationLimit: 'তৈরির সীমা',
+    upgradeToPro: 'প্রো-তে আপগ্রেড করুন',
+    pendingApproval: 'অনুমোদনের অপেক্ষায়',
+    assets: 'অ্যাসেট',
+    search: 'খুঁজুন...',
+    noCardsFound: 'কোনো ফোটোকার্ড পাওয়া যায়নি। আপনার প্রথম কার্ডটি তৈরি করুন!',
+    createFirst: 'প্রথম কার্ড তৈরি করুন',
+    today: 'আজ',
+    yesterday: 'গতকাল',
+    older: 'পুরানো',
   }
 };

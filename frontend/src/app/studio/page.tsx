@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect } from 'react'
 import TemplateSidebar from '@/components/studio/TemplateSidebar'
 import EditorPanel from '@/components/studio/EditorPanel'

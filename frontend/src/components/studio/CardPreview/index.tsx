@@ -36,10 +36,12 @@ type Props = {
   onCustomLayerRemove?: (id: string) => void
   onWatermarkChange?: (patch: Partial<CardData>) => void
   isGuest?: boolean
+  aspectRatio?: string
 }
 
 const CardPreview = forwardRef<HTMLDivElement, Props>(({ 
   template, cardData, forExport = false, isGuest = false,
+  aspectRatio = '1/1',
   onPhotoChange = () => {}, 
   onBlurChange = () => {}, 
   onBlurRemove = () => {}, 
@@ -116,10 +118,11 @@ const CardPreview = forwardRef<HTMLDivElement, Props>(({
     }}>
       <div 
         ref={ref}
+        data-card-preview
         className="relative shadow-2xl overflow-hidden bg-white select-none"
         style={{ 
           width: '100%', 
-          aspectRatio: '1/1', 
+          aspectRatio: aspectRatio, 
           containerType: 'size',
           borderRadius: `${style.borderRadius}px`
         }}

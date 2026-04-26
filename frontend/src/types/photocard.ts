@@ -37,6 +37,8 @@ export interface PhotocardCreate {
   brand_name?: string
   photos?: PhotoSlot[]
   style_overrides?: Partial<TemplateStyle>
+  base64_image?: string
+  variant?: string
 }
 
 export interface PhotocardResponse {

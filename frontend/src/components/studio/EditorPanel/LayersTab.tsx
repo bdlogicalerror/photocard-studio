@@ -10,8 +10,16 @@ import clsx from 'clsx'
 export function LayersTab() {
   const { cardData, updateStyle, updateCardData, removeCustomLayer } = useStore()
   const template = useActiveTemplate()
-  const style = template.style
+  const style = template?.style
   const [dragOver, setDragOver] = useState<string | null>(null)
+
+  if (!template || !style) {
+    return (
+      <div className="p-8 text-center animate-pulse">
+        <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest italic">Loading Layers...</span>
+      </div>
+    )
+  }
 
   const swapBrandingOrder = () => {
     updateCardData({ 

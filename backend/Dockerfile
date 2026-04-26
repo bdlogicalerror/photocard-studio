@@ -34,6 +34,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6 \
     libharfbuzz0b \
     libfribidi0 \
+    libgl1 \
+    libglib2.0-0 \
+    libxcb1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

@@ -1,35 +1,72 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect, useState } from 'react'
 import CardPreview from '@/components/studio/CardPreview'
 import { BUILT_IN_TEMPLATES } from '@/lib/types'
 
-export const dynamic = 'force-dynamic'
+export default function RenderPage() {
+  const [data, setData] = useState<any>(null)
+  const [ready, setReady] = useState(false)
 
-export default function RenderPage({
-  searchParams,
-}: {
-  searchParams: { data?: string; templateId?: string; style?: string }
-}) {
-  const { data, templateId, style } = searchParams
+  useEffect(() => {
+    // Check if data is already injected
+    if (typeof window !== 'undefined' && (window as any).__INJECTED_CARD_DATA__) {
+      setData((window as any).__INJECTED_CARD_DATA__)
+    }
 
-  if (!data || !templateId) {
-    return <div>Missing data or templateId</div>
+    // Listen for the event indicating data is ready
+    const handleDataReady = () => {
+      if ((window as any).__INJECTED_CARD_DATA__) {
+        setData((window as any).__INJECTED_CARD_DATA__)
+      }
+    }
+
+    window.addEventListener('render-data-ready', handleDataReady)
+    
+    // Also support legacy searchParams (base64) just in case
+    const searchParams = new URLSearchParams(window.location.search)
+    const baseData = searchParams.get('data')
+    if (baseData && !data) {
+       try {
+         setData(JSON.parse(atob(baseData)))
+       } catch(e) {}
+    }
+
+    return () => window.removeEventListener('render-data-ready', handleDataReady)
+  }, [])
+
+  useEffect(() => {
+    if (data) {
+      // Small delay to ensure images/fonts are painted in the DOM
+      setTimeout(() => setReady(true), 1500)
+    }
+  }, [data])
+
+  if (!data) {
+    return <div id="waiting">Waiting for payload...</div>
   }
 
-  try {
-    const cardData = JSON.parse(Buffer.from(data, 'base64').toString('utf-8'))
-    const baseTemplate = BUILT_IN_TEMPLATES.find((t) => t.id === templateId) || BUILT_IN_TEMPLATES[0]
-    const styleOverrides = style ? JSON.parse(Buffer.from(style, 'base64').toString('utf-8')) : {}
-    const template = { ...baseTemplate, style: { ...baseTemplate.style, ...styleOverrides } }
+  const baseTemplate = BUILT_IN_TEMPLATES.find((t) => t.id === data.template_id) || BUILT_IN_TEMPLATES[0]
+  const template = { ...baseTemplate }
 
-    return (
-      <div className="w-screen h-screen flex items-center justify-center bg-white m-0 p-0 overflow-hidden">
-        <div style={{ width: 1080 }} id="render-container">
-          <CardPreview template={template} cardData={cardData} forExport />
-        </div>
+  return (
+    <div 
+      className="w-screen h-screen flex items-center justify-center bg-transparent m-0 p-0 overflow-hidden"
+      data-render-complete={ready ? "true" : "false"}
+    >
+      <div 
+        style={{ 
+          width: data.variant === 'portrait' ? 1080 : data.variant === 'landscape' ? 1200 : 1080,
+          height: data.variant === 'portrait' ? 1920 : data.variant === 'landscape' ? 630 : 1080
+        }} 
+      >
+        <CardPreview 
+          template={template} 
+          cardData={data} 
+          forExport={true}
+          isGuest={false} // Backend adds guest branding
+        />
       </div>
-    )
-  } catch (err) {
-    console.error('Failed to parse:', err)
-    return <div>Failed to parse parameters</div>
-  }
+    </div>
+  )
 }

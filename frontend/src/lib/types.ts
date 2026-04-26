@@ -51,6 +51,7 @@ export type Template = {
   layout: TemplateLayout
   photoCount: 1 | 2 | 3
   isBuiltIn?: boolean
+  locked?: boolean
   style: TemplateStyle
 }
 
@@ -228,6 +229,4 @@ export const DEFAULT_CARD_DATA: CardData = {
   sponsorHeight: 4,
 }
 
-import templatesData from './templates.json'
-
-export const BUILT_IN_TEMPLATES: Template[] = templatesData as Template[]
+export const BUILT_IN_TEMPLATES: Template[] = []

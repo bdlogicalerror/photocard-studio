@@ -10,7 +10,7 @@ export function DateBox() {
   const isDragging = useRef(false)
   const startMouse = useRef({ x: 0, y: 0 })
 
-  if (!cardData.showDate && !isInteractive) return null
+  if ((!cardData.showDate && !isInteractive) || !template) return null
 
   // Default position: Top Right
   const posX = cardData.dateX ?? 95 // 95% from left (slight right padding)
@@ -73,8 +73,8 @@ export function DateBox() {
         focusTarget="date"
         popupPosition="bottom-right"
         style={{
-          showIcon: false,
-          backgroundColor: template.style.accentColor || '#ef4444',
+          showIcon: true,
+          backgroundColor: template?.style?.accentColor || '#ef4444',
           color: '#ffffff',
           fontSize: 1.5,
           fontWeight: 700,

@@ -67,9 +67,12 @@ export function UniversalBadge({ id, label, defaultIcon, dataKey, style = {}, fo
 
   const itemStyle: React.CSSProperties = {
     display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: '0.8cqw',
-    padding: combinedStyle.backgroundColor && combinedStyle.backgroundColor !== 'transparent' ? '0.4cqw 1cqw' : '0 0.4cqw',
+    padding: combinedStyle.backgroundColor && combinedStyle.backgroundColor !== 'transparent' ? '0.4cqw 1.2cqw' : '0 0.4cqw',
     borderRadius: `${combinedStyle.borderRadius ?? 0.4}cqw`,
     backgroundColor: combinedStyle.backgroundColor || 'transparent',
     border: combinedStyle.showBorder ? `${combinedStyle.borderWidth || 1}px solid ${combinedStyle.borderColor || 'rgba(255,255,255,0.2)'}` : 'none',
@@ -79,6 +82,7 @@ export function UniversalBadge({ id, label, defaultIcon, dataKey, style = {}, fo
     fontWeight: combinedStyle.fontWeight || 500,
     textTransform: (combinedStyle.textTransform || 'none') as any,
     letterSpacing: combinedStyle.letterSpacing || 'normal',
+    lineHeight: 'normal',
     cursor: isInteractive ? 'pointer' : 'default',
     position: 'relative',
     transition: 'all 0.2s'

@@ -15,7 +15,7 @@ export function PropertiesTab() {
     addCustomLayer, removeCustomLayer 
   } = useStore()
   const template = useActiveTemplate()
-  const style = template.style
+  const style = template?.style
   
   // Group references for scrolling
   const groups: Record<string, React.RefObject<HTMLDivElement>> = {
@@ -65,6 +65,14 @@ export function PropertiesTab() {
       }
     }
   }, [cardData.activeProperty])
+
+  if (!template || !style) {
+    return (
+      <div className="p-8 text-center animate-pulse">
+        <span className="text-zinc-600 text-xs font-bold uppercase tracking-widest italic">Loading Editor...</span>
+      </div>
+    )
+  }
 
   const GroupHeader = ({ id, title, icon: Icon }: { id: string, title: string, icon?: React.ElementType }) => (
     <div 

@@ -92,7 +92,7 @@ export function WatermarkBox({ text, x, y, rotation, size, opacity, forExport = 
   return (
     <div
       className="group"
-      onPointerDown={(e) => handleDown(e, 'move')}
+      onPointerDown={(e: React.PointerEvent) => handleDown(e, 'move')}
       onPointerMove={handleMove}
       onPointerUp={handleUp}
       onClick={() => setFocus('watermark')}
@@ -108,8 +108,11 @@ export function WatermarkBox({ text, x, y, rotation, size, opacity, forExport = 
         justifyContent: 'center',
         userSelect: 'none',
         padding: '8px',
-        border: shouldShowControls ? '1px dashed rgba(255,255,255,0.4)' : 'none',
+        border: '1px dashed transparent',
+        transition: 'border-color 0.2s',
       }}
+      onMouseEnter={(e: React.MouseEvent) => { if (shouldShowControls) (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.4)' }}
+      onMouseLeave={(e: React.MouseEvent) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'transparent' }}
     >
       <div style={{ opacity, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ 

@@ -22,9 +22,19 @@ class PhotocardCreate(BaseModel):
     style_overrides: Optional[StyleOverrides] = None
     # NEW: Capture the visual data from the frontend
     base64_image: Optional[str] = None 
+    variant: Optional[str] = "square" # square, portrait, landscape
+    quality: Optional[str] = "standard" # standard, hd, fhd
+
+class PhotocardSave(BaseModel):
+    filename: str
+    template_id: str
+    headline: str
+    card_data: dict
+    shield_id: Optional[str] = None
 
 class PhotocardResponse(BaseModel):
     id: str
     image_url: str
     status: str
     filename: str
+    shield_id: Optional[str] = None
