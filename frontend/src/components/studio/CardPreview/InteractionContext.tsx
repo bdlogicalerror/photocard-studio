@@ -8,7 +8,9 @@ export const InteractionContext = React.createContext({
   onBlurChange: (id: string, patch: any) => {},
   onBlurRemove: (id: string) => {},
   onCustomLayerChange: (id: string, patch: any) => {},
-  onCustomLayerRemove: (id: string) => {}
+  onCustomLayerRemove: (id: string) => {},
+  onWatermarkChange: (patch: any) => {},
+  setFocus: (property: string) => {}
 })
 
 export const fontMap: Record<string, string> = {

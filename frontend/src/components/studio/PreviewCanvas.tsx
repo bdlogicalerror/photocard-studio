@@ -9,7 +9,7 @@ import { ChevronDown, Undo, Redo, Trash2, Settings, Download, Share2 } from 'luc
 import { useGeneratePhotocard } from '@/hooks/usePhotocard'
 
 export default function PreviewCanvas() {
-  const { cardData, updatePhotoById, updateBlurRegion, removeBlurRegion, updateCustomLayer, removeCustomLayer } = useStore()
+  const { cardData, updateCardData, updatePhotoById, updateBlurRegion, removeBlurRegion, updateCustomLayer, removeCustomLayer } = useStore()
   const template = useActiveTemplate()
   const [zoom, setZoom] = useState(100)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -148,11 +148,13 @@ export default function PreviewCanvas() {
             template={template} 
             cardData={cardData} 
             forExport={generateMutation.isPending}
+            isGuest={true}
             onPhotoChange={(id, patch) => updatePhotoById(id, patch)}
             onBlurChange={(id, patch) => updateBlurRegion(id, patch)}
             onBlurRemove={(id) => removeBlurRegion(id)}
             onCustomLayerChange={(id, patch) => updateCustomLayer(id, patch)}
             onCustomLayerRemove={(id) => removeCustomLayer(id)}
+            onWatermarkChange={(patch) => updateCardData(patch)}
           />
         </div>
       </div>

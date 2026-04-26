@@ -3,15 +3,16 @@
 import React, { useRef, useContext } from 'react'
 import { InteractionContext } from '../InteractionContext'
 
-export function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale = 1, placeholder, id }: {
+export function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center', scale = 1, placeholder, id, index }: {
   src?: string | null
   objectFit?: string
   objectPosition?: string
   scale?: number
   placeholder: string
   id?: string
+  index?: number
 }) {
-  const { isInteractive, onPhotoChange } = useContext(InteractionContext)
+  const { isInteractive, onPhotoChange, setFocus } = useContext(InteractionContext)
   const isDragging = useRef(false)
   const startMouse = useRef({ x: 0, y: 0 })
 
@@ -82,16 +83,20 @@ export function PhotoSlot({ src, objectFit = 'cover', objectPosition = 'center',
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onClick={() => setFocus('photo')}
           onWheel={handleWheel}
           draggable={false}
           onDragStart={(e) => e.preventDefault()}
         />
       ) : (
-        <div style={{
-          width: '100%', height: '100%', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', color: '#666', fontSize: 13, fontFamily: 'sans-serif',
-          flexDirection: 'column', gap: 8,
-        }}>
+        <div 
+          onClick={() => setFocus('photo')}
+          style={{
+            width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', color: '#666', fontSize: 13, fontFamily: 'sans-serif',
+            flexDirection: 'column', gap: 8, cursor: isInteractive ? 'pointer' : 'default'
+          }}
+        >
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.5">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>

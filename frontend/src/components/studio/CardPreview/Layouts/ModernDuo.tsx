@@ -3,8 +3,8 @@
 import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
-import { BrandBar } from '../Elements/BrandBar'
-import { fontMap } from '../InteractionContext'
+import { HeadlineBlock } from '../Elements/HeadlineBlock'
+import { BrandingStack } from '../Elements/BrandingStack'
 
 export function ModernDuo({ style, cardData, accentBar }: { style: Template['style'], cardData: CardData, accentBar: React.ReactNode }) {
   const p = cardData.photos || []
@@ -34,7 +34,7 @@ export function ModernDuo({ style, cardData, accentBar }: { style: Template['sty
         )}
       </div>
       
-      <BrandBar style={{ ...style, showBrandBar: true }} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+      <BrandingStack style={{ ...style, showBrandBar: true }} cardData={cardData} />
     </div>
   )
 }

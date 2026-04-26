@@ -76,6 +76,9 @@ export type TemplateStyle = {
   adBarBg: string
   showWatermark: boolean
   watermarkOpacity: number
+  sponsorBgColor?: string
+  sponsorHeight?: number
+  brandItemStyles?: Record<string, BrandItemStyle>
 }
 
 export type CardData = {
@@ -91,10 +94,57 @@ export type CardData = {
   photos: PhotoSlot[]
   blurRegions: BlurRegion[]
   customLayers: CustomLayer[]
-  sponsorLogo?: string // Fixed bottom logo
-  sponsorLogoScale?: number // 0.1 - 2.0
-  sponsorLogoAlign?: 'left' | 'center' | 'right'
+  watermarkX?: number // 0-100
+  watermarkY?: number // 0-100
+  watermarkRotation?: number // 0-360
+  watermarkSize?: number // in cqw
+
+  // Sponsorship
+  showSponsor?: boolean
+  sponsorType?: 'image' | 'text'
+  sponsorText?: string
+  sponsorLabelText?: string
+  sponsorImage?: string
+  sponsorScale?: number
+  sponsorX?: number
+  sponsorY?: number
+  sponsorOrder?: 'brand-first' | 'sponsor-first'
+  sponsorBgColor?: string
+  sponsorHeight?: number // in cqw or px
+  showSponsorQrCode?: boolean
+  sponsorQrCodeData?: string
+  sponsorQrScale?: number
+  activeProperty?: string // e.g. 'headline', 'photo-0', 'sponsor', 'brand'
+  
+  // Brand Bar Extended
+  showSource?: boolean
+  qrCodeData?: string
+  showQrCode?: boolean
+  facebook?: string
+  twitter?: string
+  instagram?: string
+
+  // Per-item styling overrides
+  brandItemStyles?: Record<string, BrandItemStyle>
 }
+
+export interface BrandItemStyle {
+  visible?: boolean
+  showIcon?: boolean // whether to show the icon (for text-only items like logo)
+  icon?: string // icon name
+  color?: string
+  backgroundColor?: string
+  fontSize?: number // in cqw
+  fontFamily?: string
+  fontWeight?: number | string
+  borderRadius?: number // in cqw
+  showBorder?: boolean
+  borderWidth?: number // in px
+  borderColor?: string
+  textTransform?: string
+  letterSpacing?: string
+}
+
 
 export const DEFAULT_STYLE: TemplateStyle = {
   accentColor: '#c0392b',
@@ -118,6 +168,14 @@ export const DEFAULT_STYLE: TemplateStyle = {
   adBarBg: '#f5f5f5',
   showWatermark: true,
   watermarkOpacity: 0.3,
+  sponsorBgColor: '#111111',
+  sponsorHeight: 4,
+  brandItemStyles: {
+    "website": { "visible": true, "bgColor": "rgba(255,255,255,0.08)", "textColor": "rgba(255,255,255,0.9)", "fontSize": 1.2, "borderRadius": 0.4 },
+    "facebook": { "visible": true, "bgColor": "rgba(59,89,152,0.15)", "textColor": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4, "borderColor": "rgba(59,89,152,0.3)" },
+    "twitter": { "visible": true, "bgColor": "rgba(0,0,0,0.2)", "textColor": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4 },
+    "instagram": { "visible": true, "bgColor": "rgba(225,48,108,0.1)", "textColor": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4 }
+  }
 }
 
 export const DEFAULT_CARD_DATA: CardData = {
@@ -136,9 +194,19 @@ export const DEFAULT_CARD_DATA: CardData = {
   ],
   blurRegions: [],
   customLayers: [],
-  sponsorLogo: undefined,
-  sponsorLogoScale: 1.0,
-  sponsorLogoAlign: 'right',
+  watermarkX: 5,
+  watermarkY: 92,
+  watermarkRotation: 0,
+  watermarkSize: 1.5,
+  showSponsor: false,
+  sponsorType: 'image',
+  sponsorText: '',
+  sponsorLabelText: 'Sponsored by',
+  sponsorImage: '',
+  sponsorScale: 1.0,
+  sponsorOrder: 'brand-first',
+  sponsorBgColor: '#111111',
+  sponsorHeight: 4,
 }
 
 import templatesData from './templates.json'

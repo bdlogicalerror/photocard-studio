@@ -27,7 +27,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "rgba(0,0,0,0.85)",
+      "sponsorHeight": 4
     }
   },
   {
@@ -58,7 +60,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#0a1831",
+      "sponsorHeight": 4
     }
   },
   {
@@ -89,7 +93,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "rgba(0,0,0,0.7)",
+      "sponsorHeight": 4
     }
   },
   {
@@ -118,7 +124,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#132f23",
+      "sponsorHeight": 4
     }
   },
   {
@@ -149,7 +157,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#111111",
+      "sponsorHeight": 4
     }
   },
   {
@@ -178,7 +188,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#2e064d",
+      "sponsorHeight": 4
     }
   },
   {
@@ -207,7 +219,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#000000",
+      "sponsorHeight": 4
     }
   },
   {
@@ -238,7 +252,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#000000",
+      "sponsorHeight": 4
     }
   },
   {
@@ -269,7 +285,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#1e293b",
+      "sponsorHeight": 4
     }
   },
   {
@@ -300,7 +318,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#641717",
+      "sponsorHeight": 4
     }
   },
   {
@@ -331,7 +351,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#0f4022",
+      "sponsorHeight": 4
     }
   },
   {
@@ -362,7 +384,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#111111",
+      "sponsorHeight": 4
     }
   },
   {
@@ -393,7 +417,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#111111",
+      "sponsorHeight": 4
     }
   },
   {
@@ -424,7 +450,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "rgba(0,0,0,0.6)",
+      "sponsorHeight": 4
     }
   },
   {
@@ -455,7 +483,9 @@
       "showAdBar": false,
       "adBarBg": "#f5f5f5",
       "showWatermark": true,
-      "watermarkOpacity": 0.3
+      "watermarkOpacity": 0.3,
+      "sponsorBgColor": "#000000",
+      "sponsorHeight": 4
     }
   }
 ]

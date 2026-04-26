@@ -5,7 +5,7 @@ import { Template, CardData } from '@/lib/types'
 import { InteractionContext } from './InteractionContext'
 import { BlurBox } from './Elements/BlurBox'
 import { CustomBox } from './Elements/CustomBox'
-import { SponsorComponent } from './Elements/SponsorComponent'
+import { WatermarkBox } from './Elements/WatermarkBox'
 
 // Layouts
 import { DualTop } from './Layouts/DualTop'
@@ -33,6 +33,7 @@ type Props = {
   onBlurRemove?: (id: string) => void
   onCustomLayerChange?: (id: string, patch: any) => void
   onCustomLayerRemove?: (id: string) => void
+  onWatermarkChange?: (patch: Partial<CardData>) => void
   isGuest?: boolean
 }
 
@@ -42,7 +43,8 @@ const CardPreview = forwardRef<HTMLDivElement, Props>(({
   onBlurChange = () => {}, 
   onBlurRemove = () => {}, 
   onCustomLayerChange = () => {}, 
-  onCustomLayerRemove = () => {} 
+  onCustomLayerRemove = () => {},
+  onWatermarkChange = (patch: any) => {}
 }, ref) => {
   const { style, layout } = template
   const blurRegions = cardData.blurRegions || []
@@ -107,7 +109,9 @@ const CardPreview = forwardRef<HTMLDivElement, Props>(({
       onBlurChange, 
       onBlurRemove, 
       onCustomLayerChange, 
-      onCustomLayerRemove 
+      onCustomLayerRemove,
+      onWatermarkChange,
+      setFocus: (property: string) => onWatermarkChange({ activeProperty: property })
     }}>
       <div 
         ref={ref}
@@ -123,20 +127,36 @@ const CardPreview = forwardRef<HTMLDivElement, Props>(({
           {renderLayout()}
           {blurRegions.map(br => <BlurBox key={br.id} {...br} forExport={forExport} />)}
           {customLayers.map(cl => <CustomBox key={cl.id} {...cl} forExport={forExport} />)}
-          <SponsorComponent cardData={cardData} />
+          {/* Guest watermark logic remains here */}
 
-          {/* Anti-Screenshot Watermark for Guests */}
+          {/* User-Defined Watermark (Interactive & Customizable) */}
+          {style.showWatermark && cardData.watermarkText && (
+            <WatermarkBox 
+              text={cardData.watermarkText}
+              x={cardData.watermarkX ?? 50}
+              y={cardData.watermarkY ?? 90}
+              rotation={cardData.watermarkRotation ?? 0}
+              size={cardData.watermarkSize ?? 1.5}
+              opacity={style.watermarkOpacity}
+              forExport={forExport}
+            />
+          )}
+
+          {/* Anti-Screenshot Branding Watermark for Guests (Fixed Top-Left) */}
           {isGuest && (
             <div 
-              className="absolute right-[4%] top-1/2 -translate-y-1/2 select-none pointer-events-none"
+              className="absolute select-none pointer-events-none lowercase tracking-wider"
               style={{
-                fontSize: '2cqw',
-                fontWeight: 'bold',
-                color: 'rgba(255, 255, 255, 0.25)',
-                textShadow: '0.5px 0.5px 1px rgba(0, 0, 0, 0.5)',
+                left: '4%',
+                top: '4%',
+                fontSize: '1.8cqw',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.30)',
+                mixBlendMode: 'overlay',
+                textShadow: '1px 1px 1px rgba(0,0,0,0.2)',
                 fontFamily: 'sans-serif',
-                letterSpacing: '0.05em',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                zIndex: 200
               }}
             >
               ai.newscards.xyz

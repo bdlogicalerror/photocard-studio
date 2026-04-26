@@ -3,7 +3,7 @@
 import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
-import { BrandBar } from '../Elements/BrandBar'
+import { BrandingStack } from '../Elements/BrandingStack'
 import { fontMap } from '../InteractionContext'
 
 export function StatHighlight({ style, cardData, accentBar }: { style: Template['style'], cardData: CardData, accentBar: React.ReactNode }) {
@@ -30,7 +30,7 @@ export function StatHighlight({ style, cardData, accentBar }: { style: Template[
           lineHeight: 1.2, margin: 0
         }}>{cardData.headline || 'Statistic description goes here'}</p>
       </div>
-      <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+      <BrandingStack style={style} cardData={cardData} />
       {style.accentBarPosition === 'bottom' && accentBar}
     </>
   )

@@ -3,7 +3,7 @@
 import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
-import { BrandBar } from '../Elements/BrandBar'
+import { BrandingStack } from '../Elements/BrandingStack'
 import { fontMap } from '../InteractionContext'
 
 export function NewsReel({ style, cardData }: { style: Template['style'], cardData: CardData }) {
@@ -35,7 +35,7 @@ export function NewsReel({ style, cardData }: { style: Template['style'], cardDa
         </div>
       </div>
       <div style={{ marginTop: '2cqw' }}>
-        <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+        <BrandingStack style={style} cardData={cardData} />
       </div>
     </div>
   )

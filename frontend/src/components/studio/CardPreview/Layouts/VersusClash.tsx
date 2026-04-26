@@ -4,7 +4,7 @@ import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
 import { HeadlineBlock } from '../Elements/HeadlineBlock'
-import { BrandBar } from '../Elements/BrandBar'
+import { BrandingStack } from '../Elements/BrandingStack'
 
 export function VersusClash({ style, cardData, accentBar }: { style: Template['style'], cardData: CardData, accentBar: React.ReactNode }) {
   const p = cardData.photos || []
@@ -30,7 +30,7 @@ export function VersusClash({ style, cardData, accentBar }: { style: Template['s
           <span style={{ color: 'white', fontWeight: 900, fontSize: '4.5cqw', fontStyle: 'italic', fontFamily: 'sans-serif', alignSelf: 'center' }}>VS</span>
         </div>
       </div>
-      <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+      <BrandingStack style={style} cardData={cardData} />
       {style.accentBarPosition === 'bottom' && accentBar}
     </div>
   )

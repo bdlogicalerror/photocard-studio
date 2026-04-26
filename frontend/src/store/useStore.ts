@@ -27,7 +27,6 @@ type Store = {
   updateBlurRegion: (id: string, patch: Partial<BlurRegion>) => void
   removeBlurRegion: (id: string) => void
 
-  setSponsorLogo: (src: string | undefined) => void
   addCustomLayer: (src: string) => void
   updateCustomLayer: (id: string, patch: Partial<CustomLayer>) => void
   removeCustomLayer: (id: string) => void
@@ -104,7 +103,15 @@ export const useStore = create<Store>()(
         })),
 
       resetCardData: () =>
-        set({ cardData: { ...DEFAULT_CARD_DATA, photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })), blurRegions: [], customLayers: [], sponsorLogo: undefined } }),
+        set({ cardData: { 
+          ...DEFAULT_CARD_DATA, 
+          photos: DEFAULT_CARD_DATA.photos.map(p => ({ ...p })), 
+          blurRegions: [], 
+          customLayers: [],
+          showSponsor: false,
+          sponsorImage: undefined,
+          sponsorText: ''
+        } }),
 
       addBlurRegion: () =>
         set(s => {
@@ -135,8 +142,6 @@ export const useStore = create<Store>()(
           }
         })),
 
-      setSponsorLogo: (src) =>
-        set(s => ({ cardData: { ...s.cardData, sponsorLogo: src } })),
 
       addCustomLayer: (src) =>
         set(s => {

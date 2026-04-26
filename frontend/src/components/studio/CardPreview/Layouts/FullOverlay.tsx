@@ -3,7 +3,7 @@
 import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
-import { BrandBar } from '../Elements/BrandBar'
+import { BrandingStack } from '../Elements/BrandingStack'
 import { fontMap } from '../InteractionContext'
 
 export function FullOverlay({ style, cardData }: { style: Template['style'], cardData: CardData }) {
@@ -37,7 +37,7 @@ export function FullOverlay({ style, cardData }: { style: Template['style'], car
             opacity: 0.9
           }}>{cardData.subheadline || ''}</p>
         )}
-        <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+        <BrandingStack style={style} cardData={cardData} />
       </div>
       {style.accentBarPosition !== 'none' && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: `calc(${style.accentBarHeight / 8}cqw)`, background: style.accentColor }} />

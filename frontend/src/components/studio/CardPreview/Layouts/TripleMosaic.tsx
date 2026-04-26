@@ -4,7 +4,7 @@ import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
 import { HeadlineBlock } from '../Elements/HeadlineBlock'
-import { BrandBar } from '../Elements/BrandBar'
+import { BrandingStack } from '../Elements/BrandingStack'
 
 export function TripleMosaic({ style, cardData, accentBar }: { style: Template['style'], cardData: CardData, accentBar: React.ReactNode }) {
   const p = cardData.photos || []
@@ -19,7 +19,7 @@ export function TripleMosaic({ style, cardData, accentBar }: { style: Template['
         <PhotoSlot {...(p[2] || {})} placeholder="Photo 3" id={p[2]?.id || 'p2'} />
       </div>
       <HeadlineBlock style={style} headline={cardData.headline || ''} subheadline={cardData.subheadline || ''} />
-      <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+      <BrandingStack style={style} cardData={cardData} />
       {style.accentBarPosition === 'bottom' && accentBar}
     </>
   )

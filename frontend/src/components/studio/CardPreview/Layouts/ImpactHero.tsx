@@ -3,7 +3,7 @@
 import React from 'react'
 import { Template, CardData } from '@/lib/types'
 import { PhotoSlot } from '../Elements/PhotoSlot'
-import { BrandBar } from '../Elements/BrandBar'
+import { BrandingStack } from '../Elements/BrandingStack'
 import { fontMap } from '../InteractionContext'
 
 export function ImpactHero({ style, cardData, accentBar }: { style: Template['style'], cardData: CardData, accentBar: React.ReactNode }) {
@@ -33,7 +33,7 @@ export function ImpactHero({ style, cardData, accentBar }: { style: Template['st
            <PhotoSlot {...(p[0] || {})} placeholder="Impact Photo" id={p[0]?.id || 'p0'} />
         </div>
       </div>
-      <BrandBar style={style} brandName={cardData.brandName || ''} handle={cardData.handle || ''} website={cardData.website || ''} source={cardData.source} />
+      <BrandingStack style={style} cardData={cardData} />
     </>
   )
 }
