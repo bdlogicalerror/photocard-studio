@@ -1,15 +1,39 @@
+
 services:
-  photocard-studio:
-    container_name: photocard
-    build: .
+  # Next.js Frontend
+  frontend:
+    container_name: newscards-prod-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile # Use your multi-stage prod Dockerfile
     ports:
-      - "${PORT:-3001}:${PORT:-3001}"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
-      - ./exports:/app/public/exports
+      # Keep exports persistent on your storage path
+      - ${DOCKER_VOLUME_BASE}/exports:/app/public/exports
     environment:
+      - ENVIRONMENT=production
       - NODE_ENV=production
-      - PORT=${PORT:-3001}
-      - HOSTNAME=0.0.0.0
-      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:${PORT:-3001}}
-      - PHOTOCARD_API_URL=http://photocard:${PORT:-3001}/api/generate
+      - PORT=${FRONTEND_PORT}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
     restart: unless-stopped
+
+  # FastAPI Backend
+  backend:
+    container_name: newscards-prod-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      - ENVIRONMENT=production
+      - SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+    restart: unless-stopped
+
+networks:
+  default:
+    name: newscards-prod-net

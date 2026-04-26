@@ -1,0 +1,18 @@
+[
+  { "value": "dual-top", "label": "2 Photos Top", "photos": 2 },
+  { "value": "single-top", "label": "1 Photo Top", "photos": 1 },
+  { "value": "single-bottom", "label": "1 Photo Bottom", "photos": 1 },
+  { "value": "full-overlay", "label": "Full Overlay", "photos": 1 },
+  { "value": "dual-side", "label": "Photo Left", "photos": 1 },
+  { "value": "dual-side-reverse", "label": "Photo Right", "photos": 1 },
+  { "value": "triple-mosaic", "label": "3 Photo Mosaic", "photos": 3 },
+  { "value": "poll-vote", "label": "Poll / Vote", "photos": 1 },
+  { "value": "versus-clash", "label": "VS Clash", "photos": 2 },
+  { "value": "quote-focus", "label": "Quote Focus", "photos": 1 },
+  { "value": "breaking-alert", "label": "Breaking News", "photos": 1 },
+  { "value": "stat-highlight", "label": "Factoid / Stat", "photos": 1 },
+  { "value": "portrait-editorial", "label": "Editorial", "photos": 1 },
+  { "value": "impact-hero", "label": "Impact / Big", "photos": 1 },
+  { "value": "news-reel", "label": "Social Reel", "photos": 1 },
+  { "value": "modern-duo", "label": "Vertical Split", "photos": 2 }
+]

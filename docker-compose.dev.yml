@@ -1,0 +1,55 @@
+# docker-compose.dev.yml
+version: '3.8'
+
+services:
+  # Next.js Frontend
+  frontend:
+    container_name: newscards-studio
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    volumes:
+      - ./frontend:/app
+      - ${DOCKER_VOLUME_BASE}/frontend/node_modules:/app/node_modules
+      - newscards_next_cache:/app/.next
+      - ${DOCKER_VOLUME_BASE}/exports:/app/public/exports
+    environment:
+      - ENVIRONMENT=development
+      - PORT=${FRONTEND_PORT}
+      - WATCHPACK_POLLING=true # Critical for hot-reload on M1 Docker
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    command: sh -c "npm install && npm run dev"
+    restart: always
+
+  # FastAPI Renderer (Backend)
+  backend:
+    container_name: newscards-renderer
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    volumes:
+      - ./backend:/code
+      - ${DOCKER_VOLUME_BASE}/backend/venv:/venv
+      - ${DOCKER_VOLUME_BASE}/backend/pip-cache:/root/.cache/pip
+      - ${DOCKER_VOLUME_BASE}/backend/tmp:/tmp/photocards
+    environment:
+      - ENVIRONMENT=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - TZ=Asia/Dhaka
+      - PATH=/venv/bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - VIRTUAL_ENV=/venv
+    command: sh -c "[ ! -d /venv/bin ] && python3 -m venv /venv; /venv/bin/pip install -r requirements.txt && /venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port ${BACKEND_PORT} --reload"
+    restart: always
+
+networks:
+  default:
+    name: newscards-dev-net
+
+volumes:
+  newscards_next_cache:

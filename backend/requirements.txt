@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+gunicorn
+pydantic-settings
+Pillow
+supabase
+python-multipart
+opencv-python-headless
+PyWavelets
+invisible-watermark
+numpy
+python-dotenv
