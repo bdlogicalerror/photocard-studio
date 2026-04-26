@@ -6,6 +6,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile # Use your multi-stage prod Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL}}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-${SUPABASE_ANON_KEY}}
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
@@ -15,8 +18,8 @@ services:
       - ENVIRONMENT=production
       - NODE_ENV=production
       - PORT=${FRONTEND_PORT}
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-${SUPABASE_URL}}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-${SUPABASE_ANON_KEY}}
     restart: unless-stopped
 
   # FastAPI Backend

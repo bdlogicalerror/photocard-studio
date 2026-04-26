@@ -6,6 +6,7 @@ import { InteractionContext } from './InteractionContext'
 import { BlurBox } from './Elements/BlurBox'
 import { CustomBox } from './Elements/CustomBox'
 import { WatermarkBox } from './Elements/WatermarkBox'
+import { DateBox } from './Elements/DateBox'
 
 // Layouts
 import { DualTop } from './Layouts/DualTop'
@@ -141,6 +142,9 @@ const CardPreview = forwardRef<HTMLDivElement, Props>(({
               forExport={forExport}
             />
           )}
+
+          {/* User-Defined Date Badge (Interactive & Customizable) */}
+          <DateBox />
 
           {/* Anti-Screenshot Branding Watermark for Guests (Fixed Top-Left) */}
           {isGuest && (

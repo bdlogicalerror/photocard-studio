@@ -15,6 +15,15 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN mkdir -p public
 ENV NEXT_TELEMETRY_DISABLED 1
+
+# Receive environment variables from docker-compose
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# Set them as ENV so Next.js can use them during the build (for static prerendering)
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 RUN npm run build
 RUN npx esbuild src/mcp-server/index.ts --bundle --platform=node --format=esm --outfile=mcp.mjs
 RUN npx esbuild src/generate-cli.ts --bundle --platform=node --format=esm --outfile=generate.mjs

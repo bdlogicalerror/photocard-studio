@@ -3,7 +3,7 @@ import React from 'react'
 import { CardData, BrandItemStyle } from '@/lib/types'
 import { UniversalBadge } from '../UniversalBadge'
 
-interface BrandItemProps {
+interface SponsorItemProps {
   id: string
   label: string
   defaultIcon?: string
@@ -12,6 +12,6 @@ interface BrandItemProps {
   focusTarget?: string
 }
 
-export function BrandItem(props: BrandItemProps) {
+export function SponsorItem(props: SponsorItemProps) {
   return <UniversalBadge {...props} />
 }

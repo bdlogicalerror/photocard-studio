@@ -39,7 +39,7 @@ export default function PreviewCanvas() {
         brand_name: cardData.brandName,
         photos: cardData.photos.map(p => ({ 
           id: p.id, 
-          src: p.src, 
+          src: p.src || '', 
           objectPosition: p.objectPosition, 
           objectFit: p.objectFit, 
           scale: p.scale 

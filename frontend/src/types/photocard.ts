@@ -1,6 +1,6 @@
 export interface PhotoSlot {
   id: string
-  src: string
+  src: string | null
   objectPosition?: string
   objectFit?: string
   scale?: number

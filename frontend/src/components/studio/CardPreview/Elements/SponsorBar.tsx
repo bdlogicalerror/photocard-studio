@@ -11,6 +11,17 @@ export function SponsorBar({ style, cardData }: { style: Template['style'], card
   const isResizing = useRef(false)
   const startX = useRef(0)
   const startScale = useRef(1)
+  
+  // Handlers for image panning & zooming
+  const isDraggingImage = useRef(false)
+  const isResizingImage = useRef(false)
+  const resizeDir = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 })
+  const startMouse = useRef({ x: 0, y: 0 })
+  const startImageScale = useRef({ x: 1, y: 1 })
+
+  // Handlers for QR Code panning
+  const isDraggingQr = useRef(false)
+  const startMouseQr = useRef({ x: 0, y: 0 })
 
   const handleResizeDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isInteractive) return
@@ -71,24 +82,21 @@ export function SponsorBar({ style, cardData }: { style: Template['style'], card
   })
 
   const isImage = cardData.sponsorType === 'image'
-  
-  // Handlers for image panning & zooming (WatermarkBox style)
-  const isDraggingImage = useRef(false)
-  const isResizingImage = useRef(false)
-  const startMouse = useRef({ x: 0, y: 0 })
-  const startImageScale = useRef(1)
 
-  const handleImageDown = (e: React.PointerEvent<HTMLDivElement>, action: 'move' | 'resize') => {
+  const handleImageDown = (e: React.PointerEvent<HTMLDivElement>, action: 'move' | 'resize', dx = 0, dy = 0) => {
     if (!isInteractive || !isImage) return
     e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
     startMouse.current = { x: e.clientX, y: e.clientY }
-    
     if (action === 'move') {
       isDraggingImage.current = true
     } else {
       isResizingImage.current = true
-      startImageScale.current = cardData.sponsorScale || 1
+      resizeDir.current = { dx, dy }
+      startImageScale.current = {
+        x: cardData.sponsorScaleX ?? cardData.sponsorScale ?? 1,
+        y: cardData.sponsorScaleY ?? cardData.sponsorScale ?? 1
+      }
     }
   }
 
@@ -105,17 +113,24 @@ export function SponsorBar({ style, cardData }: { style: Template['style'], card
     if (isDraggingImage.current) {
       const pdx = (dx / rect.width) * 100
       const pdy = (dy / rect.height) * 100
-      const curX = cardData.sponsorX ?? 50
-      const curY = cardData.sponsorY ?? 50
-      
-      updateCardData({ 
-        sponsorX: Math.max(-100, Math.min(200, curX + pdx)),
-        sponsorY: Math.max(-100, Math.min(200, curY + pdy))
+      updateCardData({
+        sponsorX: Math.max(-100, Math.min(200, (cardData.sponsorX ?? 50) + pdx)),
+        sponsorY: Math.max(-100, Math.min(200, (cardData.sponsorY ?? 50) + pdy))
       })
     } else if (isResizingImage.current) {
-      // Resize logic based on X delta
-      const pdx = (dx / rect.width) * 5
-      updateCardData({ sponsorScale: Math.max(0.1, Math.min(10, startScale.current + pdx)) })
+      const { dx: dirX, dy: dirY } = resizeDir.current
+      const scaleStepX = (dx / rect.width) * dirX * 3
+      const scaleStepY = (dy / rect.height) * dirY * 3
+      const updates: Partial<typeof cardData> = {}
+      if (dirX !== 0) updates.sponsorScaleX = Math.max(0.05, Math.min(10, startImageScale.current.x + scaleStepX))
+      if (dirY !== 0) updates.sponsorScaleY = Math.max(0.05, Math.min(10, startImageScale.current.y + scaleStepY))
+      updateCardData(updates)
+      // keep start so delta accumulates from start (not incremental)
+      startMouse.current = { x: e.clientX, y: e.clientY }
+      startImageScale.current = {
+        x: updates.sponsorScaleX ?? startImageScale.current.x,
+        y: updates.sponsorScaleY ?? startImageScale.current.y
+      }
     }
   }
 
@@ -165,13 +180,39 @@ export function SponsorBar({ style, cardData }: { style: Template['style'], card
         <div 
           className="group"
           style={{
-          marginLeft: 'auto',
-          height: '4cqw', // Independent base height
-          display: 'flex',
-          alignItems: 'center',
-          position: 'relative',
-          padding: '0.4cqw'
-        }}>
+            position: 'absolute',
+            right: '4cqw', // Start right-aligned
+            height: '4cqw', // Independent base height
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0.4cqw',
+            transform: `translate(${cardData.sponsorQrX || 0}px, ${cardData.sponsorQrY || 0}px)`,
+            cursor: isInteractive ? 'move' : 'default',
+            zIndex: 10
+          }}
+          onPointerDown={(e) => {
+            if (!isInteractive) return
+            e.stopPropagation()
+            e.currentTarget.setPointerCapture(e.pointerId)
+            isDraggingQr.current = true
+            startMouseQr.current = { x: e.clientX, y: e.clientY }
+          }}
+          onPointerMove={(e) => {
+            if (!isDraggingQr.current) return
+            const dx = e.clientX - startMouseQr.current.x
+            const dy = e.clientY - startMouseQr.current.y
+            startMouseQr.current = { x: e.clientX, y: e.clientY }
+            
+            updateCardData({
+              sponsorQrX: (cardData.sponsorQrX || 0) + dx,
+              sponsorQrY: (cardData.sponsorQrY || 0) + dy
+            })
+          }}
+          onPointerUp={(e) => {
+            isDraggingQr.current = false
+            e.currentTarget.releasePointerCapture(e.pointerId)
+          }}
+        >
           <div style={{
             background: '#fff',
             padding: '0.4cqw',
@@ -190,6 +231,7 @@ export function SponsorBar({ style, cardData }: { style: Template['style'], card
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(cardData.sponsorQrCodeData)}`}
                 alt="Sponsor QR Code"
                 style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
+                draggable={false}
               />
             ) : (
               <div className="w-full h-full bg-black/10 flex items-center justify-center rounded-sm">
@@ -260,56 +302,43 @@ export function SponsorBar({ style, cardData }: { style: Template['style'], card
     >
       {/* Floating Image Layer for Sponsor Type 'image' */}
       {isImage && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, overflow: 'hidden' }}>
-          {cardData.sponsorImage ? (
-            <div
-              onPointerDown={(e) => handleImageDown(e, 'move')}
-              onPointerMove={handleImageMove}
-              onPointerUp={handleImageUp}
-              onWheel={handleImageWheel}
-              style={{
-                position: 'absolute',
-                left: `${cardData.sponsorX ?? 50}%`,
-                top: `${cardData.sponsorY ?? 50}%`,
-                transform: `translate(-50%, -50%) scale(${cardData.sponsorScale ?? 1})`,
-                cursor: isInteractive ? 'move' : 'default',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '4px',
-                border: isInteractive ? '1px dashed rgba(255,255,255,0.4)' : 'none',
-                touchAction: 'none'
-              }}
-            >
-              <img 
-                src={cardData.sponsorImage}
-                crossOrigin="anonymous"
-                draggable={false}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+          {cardData.sponsorImage ? (() => {
+            const fit = cardData.sponsorImageFit === 'contain' ? 'contain' : 'cover'
+            const posX = cardData.sponsorX ?? 50
+            const posY = cardData.sponsorY ?? 50
+            const scale = cardData.sponsorScale ?? 1
+
+            return (
+              <div
+                onPointerDown={(e) => handleImageDown(e, 'move')}
+                onPointerMove={handleImageMove}
+                onPointerUp={handleImageUp}
+                onWheel={handleImageWheel}
                 style={{
-                  maxHeight: '20cqw', // Base height before scale
-                  maxWidth: '80cqw',  // Base width before scale
-                  objectFit: 'contain'
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  cursor: isInteractive ? 'move' : 'default',
+                  touchAction: 'none',
+                  overflow: 'hidden'
                 }}
-              />
-              {isInteractive && (
-                <div 
-                  className="opacity-0 hover:opacity-100 transition-opacity"
-                  onPointerDown={(e) => handleImageDown(e, 'resize')}
-                  style={{ 
-                    position: 'absolute', 
-                    bottom: -5, 
-                    right: -5, 
-                    width: 12, height: 12, 
-                    cursor: 'nwse-resize', 
-                    background: '#fff', 
-                    borderRadius: '2px',
-                    border: '1px solid #3b82f6',
-                    zIndex: 10
+              >
+                <img
+                  src={cardData.sponsorImage}
+                  crossOrigin="anonymous"
+                  draggable={false}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: fit,
+                    objectPosition: `${posX}% ${posY}%`,
+                    transform: `scale(${scale})`,
+                    pointerEvents: 'none',
+                    display: 'block'
                   }}
                 />
-              )}
-            </div>
-          ) : (
+              </div>
+            )
+          })() : (
             <div className="w-full h-full bg-black/40 flex items-center justify-center text-white/40 text-[1.2cqw]">
               Click to configure Sponsor Image
             </div>

@@ -106,6 +106,9 @@ export type CardData = {
   sponsorLabelText?: string
   sponsorImage?: string
   sponsorScale?: number
+  sponsorScaleX?: number
+  sponsorScaleY?: number
+  sponsorImageFit?: 'cover' | 'contain' | 'free'
   sponsorX?: number
   sponsorY?: number
   sponsorOrder?: 'brand-first' | 'sponsor-first'
@@ -114,6 +117,8 @@ export type CardData = {
   showSponsorQrCode?: boolean
   sponsorQrCodeData?: string
   sponsorQrScale?: number
+  sponsorQrX?: number
+  sponsorQrY?: number
   activeProperty?: string // e.g. 'headline', 'photo-0', 'sponsor', 'brand'
   
   // Brand Bar Extended
@@ -123,9 +128,21 @@ export type CardData = {
   facebook?: string
   twitter?: string
   instagram?: string
+  brandType?: 'text' | 'image'
+  brandImage?: string
+  brandScale?: number
+  brandX?: number
+  brandY?: number
+  brandImageFit?: 'cover' | 'contain' | 'free'
 
   // Per-item styling overrides
   brandItemStyles?: Record<string, BrandItemStyle>
+
+  // Date Component
+  showDate?: boolean
+  dateText?: string
+  dateX?: number
+  dateY?: number
 }
 
 export interface BrandItemStyle {
@@ -171,10 +188,10 @@ export const DEFAULT_STYLE: TemplateStyle = {
   sponsorBgColor: '#111111',
   sponsorHeight: 4,
   brandItemStyles: {
-    "website": { "visible": true, "bgColor": "rgba(255,255,255,0.08)", "textColor": "rgba(255,255,255,0.9)", "fontSize": 1.2, "borderRadius": 0.4 },
-    "facebook": { "visible": true, "bgColor": "rgba(59,89,152,0.15)", "textColor": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4, "borderColor": "rgba(59,89,152,0.3)" },
-    "twitter": { "visible": true, "bgColor": "rgba(0,0,0,0.2)", "textColor": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4 },
-    "instagram": { "visible": true, "bgColor": "rgba(225,48,108,0.1)", "textColor": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4 }
+    "website": { "visible": true, "backgroundColor": "rgba(255,255,255,0.08)", "color": "rgba(255,255,255,0.9)", "fontSize": 1.2, "borderRadius": 0.4 },
+    "facebook": { "visible": true, "backgroundColor": "rgba(59,89,152,0.15)", "color": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4, "borderColor": "rgba(59,89,152,0.3)" },
+    "twitter": { "visible": true, "backgroundColor": "rgba(0,0,0,0.2)", "color": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4 },
+    "instagram": { "visible": true, "backgroundColor": "rgba(225,48,108,0.1)", "color": "#ffffff", "fontSize": 1.1, "borderRadius": 0.4 }
   }
 }
 
@@ -204,6 +221,8 @@ export const DEFAULT_CARD_DATA: CardData = {
   sponsorLabelText: 'Sponsored by',
   sponsorImage: '',
   sponsorScale: 1.0,
+  sponsorScaleX: 1.0,
+  sponsorScaleY: 1.0,
   sponsorOrder: 'brand-first',
   sponsorBgColor: '#111111',
   sponsorHeight: 4,

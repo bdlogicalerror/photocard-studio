@@ -23,9 +23,8 @@ export function VersusClash({ style, cardData, accentBar }: { style: Template['s
         <div style={{
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           background: style.accentColor, width: '12cqw', height: '12cqw', borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyCenter: 'center', border: '0.6cqw solid white',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', border: '0.6cqw solid white',
           boxShadow: '0 1cqw 3cqw rgba(0,0,0,0.5)', zIndex: 10,
-          display: 'flex', justifyContent: 'center'
         }}>
           <span style={{ color: 'white', fontWeight: 900, fontSize: '4.5cqw', fontStyle: 'italic', fontFamily: 'sans-serif', alignSelf: 'center' }}>VS</span>
         </div>

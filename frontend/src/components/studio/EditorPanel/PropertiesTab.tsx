@@ -23,6 +23,7 @@ export function PropertiesTab() {
     content: useRef<HTMLDivElement>(null),
     branding: useRef<HTMLDivElement>(null),
     watermark: useRef<HTMLDivElement>(null),
+    date: useRef<HTMLDivElement>(null),
     graphics: useRef<HTMLDivElement>(null),
     privacy: useRef<HTMLDivElement>(null),
     colors: useRef<HTMLDivElement>(null),
@@ -148,16 +149,67 @@ export function PropertiesTab() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Field label="Brand Name">
-                  <button 
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onClick={() => updateCardData({ activeProperty: 'brand-brandName' })}
-                    className="w-full flex items-center justify-between px-3 py-2 bg-zinc-950/50 border border-zinc-800/80 rounded-lg hover:border-blue-500/50 hover:bg-zinc-900 transition-all text-left group"
-                  >
-                    <span className="text-xs text-zinc-300 truncate">{cardData.brandName || 'Not set'}</span>
-                    <span className="text-[10px] text-zinc-600 group-hover:text-blue-500 transition-colors">Edit Settings</span>
-                  </button>
-                </Field>
+                <div className="flex gap-1 p-1 bg-zinc-950 rounded-lg border border-zinc-800 mb-2">
+                  {(['image', 'text'] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => updateCardData({ brandType: type })}
+                      className={clsx(
+                        "flex-1 py-1.5 text-[10px] font-bold uppercase tracking-tight rounded-md transition-all",
+                        (cardData.brandType || 'text') === type 
+                          ? "bg-blue-600 text-white shadow-sm" 
+                          : "text-zinc-500 hover:text-zinc-300"
+                      )}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+
+                {cardData.brandType === 'image' ? (
+                  <div className="space-y-3">
+                    <Field label="Brand Logo Image">
+                      <div className="space-y-2">
+                        <input 
+                          type="text" 
+                          placeholder="Image URL" 
+                          value={cardData.brandImage || ''} 
+                          onChange={(e) => updateCardData({ brandImage: e.target.value })} 
+                          className={inputCls} 
+                        />
+                        <div className="flex items-center gap-2">
+                          <label className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-lg cursor-pointer hover:bg-zinc-900 transition-all text-center">
+                            <span className="text-[10px] text-zinc-500 font-bold uppercase">Upload File</span>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0]
+                                if (file) {
+                                  const reader = new FileReader()
+                                  reader.onload = (ev) => updateCardData({ brandImage: ev.target?.result as string })
+                                  reader.readAsDataURL(file)
+                                }
+                              }} 
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </Field>
+                  </div>
+                ) : (
+                  <Field label="Brand Name">
+                    <button 
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={() => updateCardData({ activeProperty: 'brand-brandName' })}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-zinc-950/50 border border-zinc-800/80 rounded-lg hover:border-blue-500/50 hover:bg-zinc-900 transition-all text-left group"
+                    >
+                      <span className="text-xs text-zinc-300 truncate">{cardData.brandName || 'Not set'}</span>
+                      <span className="text-[10px] text-zinc-600 group-hover:text-blue-500 transition-colors">Edit Settings</span>
+                    </button>
+                  </Field>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -324,15 +376,38 @@ export function PropertiesTab() {
                       
                       {cardData.sponsorImage && (
                         <div className="space-y-2">
+                          {/* Image Fit Mode */}
+                          <div className="space-y-1">
+                            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight">Image Fit</span>
+                            <div className="grid grid-cols-2 gap-1">
+                              {(['cover', 'contain'] as const).map(mode => (
+                                <button
+                                  key={mode}
+                                  onClick={() => updateCardData({ sponsorImageFit: mode })}
+                                  className={`py-1.5 text-[10px] font-bold rounded-lg capitalize transition-all ${
+                                    (cardData.sponsorImageFit || 'cover') === mode
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                                  }`}
+                                >
+                                  {mode === 'cover' ? '⬛ Fill' : '🔲 Fit'}
+                                </button>
+                              ))}
+                            </div>
+                            <p className="text-[9px] text-zinc-600">
+                              {(cardData.sponsorImageFit || 'cover') === 'cover' && 'Image fills the entire bar (may crop)'}
+                              {cardData.sponsorImageFit === 'contain' && 'Image fits inside bar (letterboxed)'}
+                            </p>
+                          </div>
                           <Field label={`Logo Scale: ${(cardData.sponsorScale ?? 1.0).toFixed(2)}x`}>
-                            <input 
-                              type="range" min="0.1" max="2.0" step="0.05" 
-                              value={cardData.sponsorScale ?? 1.0} 
+                            <input
+                              type="range" min="0.1" max="5.0" step="0.05"
+                              value={cardData.sponsorScale ?? 1.0}
                               onChange={(e: ChangeEvent<HTMLInputElement>) => updateCardData({ sponsorScale: parseFloat(e.target.value) })}
-                              className="w-full accent-blue-500" 
+                              className="w-full accent-blue-500"
                             />
                           </Field>
-                          <button 
+                          <button
                             onClick={() => updateCardData({ sponsorImage: undefined })}
                             className="w-full py-1.5 text-[10px] text-red-500/80 font-bold hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                           >
@@ -449,6 +524,38 @@ export function PropertiesTab() {
                   />
                 </Field>
               </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Date Badge Group */}
+      <div ref={groups.date} className="scroll-mt-4">
+        <GroupHeader id="date" title="Date Badge" />
+        {openGroups.date && (
+          <div className="p-3 bg-zinc-900/20 rounded-xl mb-4 space-y-4">
+            <Field label="Date Text">
+              <input 
+                type="text" 
+                value={cardData.dateText ?? ''} 
+                onChange={(e: ChangeEvent<HTMLInputElement>) => updateCardData({ dateText: e.target.value })} 
+                className={inputCls} 
+                placeholder="24 OCT 2024"
+              />
+            </Field>
+            <Field label="Show">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={cardData.showDate ?? false}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => updateCardData({ showDate: e.target.checked })}
+                  className="accent-blue-500"
+                />
+                <span className="text-xs text-zinc-500">Enable Badge</span>
+              </label>
+            </Field>
+            <div className="text-[10px] text-zinc-500 bg-blue-500/10 text-blue-400 p-2 rounded-lg border border-blue-500/20">
+              Tip: Click the date badge on the preview to edit its colors and styling! Drag it to reposition.
             </div>
           </div>
         )}
