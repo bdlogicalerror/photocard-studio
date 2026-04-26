@@ -181,8 +181,20 @@ export function PropertiesTab() {
                         <input 
                           type="text" 
                           placeholder="Image URL" 
-                          value={cardData.brandImage || ''} 
-                          onChange={(e) => updateCardData({ brandImage: e.target.value })} 
+                          value={cardData.brandImage?.startsWith('http') && cardData.brandImage.includes('proxy-image?url=') ? decodeURIComponent(cardData.brandImage.split('url=')[1].split('&')[0]) : (cardData.brandImage || '')} 
+                          onChange={(e) => {
+                            const url = e.target.value.trim()
+                            if (!url) {
+                              updateCardData({ brandImage: undefined })
+                              return
+                            }
+                            if (url.startsWith('http')) {
+                              const proxied = `/api/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}`
+                              updateCardData({ brandImage: proxied })
+                            } else {
+                              updateCardData({ brandImage: url })
+                            }
+                          }} 
                           className={inputCls} 
                         />
                         <div className="flex items-center gap-2">

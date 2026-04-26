@@ -15,14 +15,14 @@ async def save_photocard(request: PhotocardSave, fastapi_request: Request):
         
     try:
         logger.info(f"Saving photocard for user {user_id}: {request.filename}")
-        result = await photocard_service.save_to_db(
-            user_id=user_id,
-            filename=request.filename,
-            template_id=request.template_id,
-            headline=request.headline,
-            card_data=request.card_data,
-            shield_id=request.shield_id
-        )
+        result = await photocard_service.save_to_db({
+            "user_id": user_id,
+            "filename": request.filename,
+            "template_id": request.template_id,
+            "headline": request.headline,
+            "card_data": request.card_data,
+            "shield_id": request.shield_id
+        })
         return result
     except Exception as e:
         logger.error(f"Save to DB failed: {e}")

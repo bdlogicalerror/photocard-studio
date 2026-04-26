@@ -37,6 +37,9 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379
       - CHROME_WS_URL=http://chrome:9222
+      - FRONTEND_INTERNAL_URL=http://frontend:${FRONTEND_PORT:-3003}
+    volumes:
+      - ${DOCKER_VOLUME_BASE}/backend/tmp:/tmp/photocards
     depends_on:
       - redis
     restart: unless-stopped
@@ -59,6 +62,8 @@ services:
       - "9222:9222"
     restart: unless-stopped
     shm_size: "1gb"
+    cap_add:
+      - SYS_ADMIN
 
   # Background Queue Worker
   worker:
@@ -72,8 +77,10 @@ services:
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379
-      - CHROME_WS_URL=ws://chrome:9222
-      - FRONTEND_INTERNAL_URL=http://frontend:${FRONTEND_PORT}
+      - CHROME_WS_URL=http://chrome:9222
+      - FRONTEND_INTERNAL_URL=http://frontend:${FRONTEND_PORT:-3003}
+    volumes:
+      - ${DOCKER_VOLUME_BASE}/backend/tmp:/tmp/photocards
     command: ["arq", "worker.WorkerSettings"]
     depends_on:
       - redis

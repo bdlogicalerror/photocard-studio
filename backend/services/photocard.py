@@ -16,29 +16,17 @@ class PhotocardService:
             except Exception as e:
                 logger.error(f"Failed to initialize Supabase client: {e}")
 
-    async def save_to_db(self, user_id: str, filename: str, template_id: str, headline: str, card_data: dict, shield_id: str = None, is_guest: bool = False, guest_ip: str = None):
+    async def save_to_db(self, data: dict):
         if not self.supabase:
             logger.error("Supabase client not initialized")
             return
             
-        data = {
-            "filename": filename,
-            "template_id": template_id,
-            "headline": headline,
-            "card_data": card_data,
-            "shield_id": shield_id,
-            "is_guest": is_guest,
-        }
-        
-        # Only include user_id if it's a real user
-        if user_id:
-            data["user_id"] = user_id
-        
-        # Store guest IP for tracking
-        if guest_ip:
-            data["guest_ip"] = guest_ip
-        
         try:
+            # card_data should be a JSON field in Postgres
+            # If payload is passed, we might want to store it there
+            if "card_data" not in data and "payload" in data:
+                data["card_data"] = data.pop("payload")
+
             result = self.supabase.table("photocards").insert(data).execute()
             return {"success": True, "data": result.data}
         except Exception as e:

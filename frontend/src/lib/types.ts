@@ -229,4 +229,5 @@ export const DEFAULT_CARD_DATA: CardData = {
   sponsorHeight: 4,
 }
 
-export const BUILT_IN_TEMPLATES: Template[] = []
+import templates from './templates.json'
+export const BUILT_IN_TEMPLATES: Template[] = templates as Template[]

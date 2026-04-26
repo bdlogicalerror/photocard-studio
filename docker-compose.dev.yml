@@ -1,5 +1,4 @@
 # docker-compose.dev.yml
-version: '3.8'
 
 services:
   # Next.js Frontend
@@ -68,6 +67,8 @@ services:
       - "9222:9222"
     restart: always
     shm_size: "1gb"
+    cap_add:
+      - SYS_ADMIN
 
   # Background Queue Worker
   worker:
@@ -89,6 +90,7 @@ services:
       - VIRTUAL_ENV=/venv
       - REDIS_URL=redis://redis:6379
       - CHROME_WS_URL=http://chrome:9222
+      - FRONTEND_INTERNAL_URL=http://frontend:3003
     command: sh -c "[ ! -d /venv/bin ] && python3 -m venv /venv; /venv/bin/pip install -r requirements.txt && /venv/bin/arq worker.WorkerSettings"
     depends_on:
       - redis
@@ -98,6 +100,7 @@ services:
 networks:
   default:
     name: newscards-dev-net
+    driver: bridge
 
 volumes:
   newscards_next_cache:

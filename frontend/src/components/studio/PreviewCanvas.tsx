@@ -127,7 +127,13 @@ export default function PreviewCanvas() {
       
       toast.success('Generated successfully!', { id: toastId })
       
-      const imgResponse = await fetch(result.image_url)
+      // Ensure we use the full backend URL for the fetch if it's a relative path
+      const backendUrl = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL) || 'http://localhost:8003'
+      const fullImageUrl = result.image_url.startsWith('http') 
+        ? result.image_url 
+        : `${backendUrl}${result.image_url}`
+
+      const imgResponse = await fetch(fullImageUrl)
       const blobResponse = await imgResponse.blob()
       const file = new File([blobResponse], result.filename, { type: 'image/png' })
 

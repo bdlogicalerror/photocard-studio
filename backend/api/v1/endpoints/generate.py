@@ -119,6 +119,9 @@ async def get_generation_status(job_id: str):
         if job_data["status"] == "complete":
             progress = 100
             message = "Done"
+        elif job_data["status"] == "failed":
+            progress = -1
+            message = "Failed to generate"
             
         return {
             "job_id": job_id,

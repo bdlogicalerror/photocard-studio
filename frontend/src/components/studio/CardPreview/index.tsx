@@ -49,17 +49,17 @@ const CardPreview = forwardRef<HTMLDivElement, Props>(({
   onCustomLayerRemove = () => {},
   onWatermarkChange = (patch: any) => {}
 }, ref) => {
-  const { style, layout } = template
-  const blurRegions = cardData.blurRegions || []
-  const customLayers = cardData.customLayers || []
+  const { style = {}, layout = 'single-top' } = template || {}
+  const blurRegions = cardData?.blurRegions || []
+  const customLayers = cardData?.customLayers || []
 
   const [dateStr, setDateStr] = useState<string>('')
   useEffect(() => {
     setDateStr(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }))
   }, [])
 
-  const accentBar = style.accentBarPosition !== 'none' && (
-    <div style={{ height: `calc(${style.accentBarHeight / 8}cqw)`, background: style.accentColor, flexShrink: 0 }} />
+  const accentBar = (style as any)?.accentBarPosition && (style as any).accentBarPosition !== 'none' && (
+    <div style={{ height: `calc(${((style as any).accentBarHeight || 8) / 8}cqw)`, background: (style as any).accentColor || '#000', flexShrink: 0 }} />
   )
 
   const renderLayout = () => {

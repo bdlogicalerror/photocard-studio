@@ -61,7 +61,7 @@ export function PhotoUploader({ idx, label }: { idx: number; label: string }) {
             return
           }
           if (url.startsWith('http')) {
-            const proxied = `${window.location.origin}/api/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}`
+            const proxied = `/api/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}`
             updatePhoto(idx, { src: proxied })
           } else {
             updatePhoto(idx, { src: url })

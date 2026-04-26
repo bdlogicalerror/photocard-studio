@@ -4,6 +4,8 @@ import json
 import uuid
 from datetime import datetime
 from io import BytesIO
+import socket
+from urllib.parse import urlparse, urlunparse
 from PIL import Image
 
 from arq import create_pool
@@ -16,13 +18,30 @@ from services.storage import storage_service
 from services.photocard import photocard_service
 from utils.logging import logger
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-CHROME_WS_URL = os.getenv("CHROME_WS_URL", "ws://localhost:9222")
-FRONTEND_URL = os.getenv("FRONTEND_INTERNAL_URL", "http://frontend:3003")
+REDIS_URL = os.getenv("REDIS_URL")
+CHROME_WS_URL = os.getenv("CHROME_WS_URL")
+FRONTEND_URL = os.getenv("FRONTEND_INTERNAL_URL")
 
 # Extract host/port from REDIS_URL for arq
 redis_host = REDIS_URL.split("://")[1].split(":")[0]
 redis_port = int(REDIS_URL.split("://")[1].split(":")[1]) if ":" in REDIS_URL.split("://")[1] else 6379
+
+def get_resolved_chrome_url(url: str) -> str:
+    """Resolve hostname to IP to bypass Chrome DevTools Host header security restrictions."""
+    if not url: return url
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        # If it's a hostname (not an IP), resolve it
+        if hostname and not hostname.replace('.', '').isnumeric():
+            ip = socket.gethostbyname(hostname)
+            new_netloc = f"{ip}:{parsed.port}" if parsed.port else ip
+            resolved_url = urlunparse(parsed._replace(netloc=new_netloc))
+            logger.info(f"Resolved Chrome URL: {url} -> {resolved_url}")
+            return resolved_url
+    except Exception as e:
+        logger.warning(f"Failed to resolve Chrome hostname {url}: {e}")
+    return url
 
 async def set_progress(ctx, job_id: str, status: str, progress: int):
     redis = ctx['redis']
@@ -33,12 +52,15 @@ async def generate_photocard_task(ctx, job_id: str, template_id: str, payload: d
         await set_progress(ctx, job_id, "Initializing Browser", 10)
         
         async with async_playwright() as p:
-            logger.info(f"Connecting to remote browser at {CHROME_WS_URL}")
+            # Resolve IP to avoid Chrome 500 Host Header Error
+            resolved_ws_url = get_resolved_chrome_url(CHROME_WS_URL)
+            logger.info(f"Connecting to remote browser at {resolved_ws_url}")
+            
             # Retry connection up to 3 times
             browser = None
             for i in range(3):
                 try:
-                    browser = await p.chromium.connect_over_cdp(CHROME_WS_URL)
+                    browser = await p.chromium.connect_over_cdp(resolved_ws_url)
                     break
                 except Exception as e:
                     if i == 2: raise e
@@ -70,6 +92,10 @@ async def generate_photocard_task(ctx, job_id: str, template_id: str, payload: d
             )
             page = await context.new_page()
             
+            # Forward browser console logs to python logger
+            page.on("console", lambda msg: logger.info(f"BROWSER CONSOLE: [{msg.type}] {msg.text}"))
+            page.on("pageerror", lambda exc: logger.error(f"BROWSER ERROR: {exc}"))
+            
             await set_progress(ctx, job_id, "Rendering UI Layout", 30)
             
             # Construct the internal render URL
@@ -86,7 +112,10 @@ async def generate_photocard_task(ctx, job_id: str, template_id: str, payload: d
             await page.evaluate("window.dispatchEvent(new Event('render-data-ready'));")
             
             # Wait for all network requests (images) to finish and a special element to be ready
-            await page.wait_for_selector("[data-render-complete='true']", timeout=15000)
+            # We use a longer timeout for dev server (60s)
+            logger.info("Waiting for [data-render-complete='true']...")
+            await page.wait_for_selector("[data-render-complete='true']", timeout=60000)
+            logger.info("Render complete detected!")
             
             await set_progress(ctx, job_id, "Capturing High-Res Screenshot", 60)
             
@@ -124,6 +153,7 @@ async def generate_photocard_task(ctx, job_id: str, template_id: str, payload: d
             "template_id": template_id,
             "shield_id": shield_id,
             "headline": payload.get("headline", ""),
+            "card_data": payload,  # FIXED: Include card_data
             "user_id": user_id,
             "guest_ip": client_ip,
             "is_guest": is_guest
