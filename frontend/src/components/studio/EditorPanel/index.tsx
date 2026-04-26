@@ -2,7 +2,7 @@
 'use client'
 import { useState } from 'react'
 import { useStore } from '@/store/useStore'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, X } from 'lucide-react'
 import { PropertiesTab } from './PropertiesTab'
 import { LayersTab } from './LayersTab'
 
@@ -12,8 +12,19 @@ export default function EditorPanel() {
 
   return (
     <div className="w-full h-full bg-[#1E1E24] flex-shrink-0 border-l border-zinc-800/50 overflow-y-auto flex flex-col pb-20 md:pb-0 text-sm">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900/50 sticky top-0 z-20">
+        <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Editor</span>
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent('close-sidebar'))}
+          className="p-2 bg-zinc-800 rounded-lg text-white"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
       {/* Top Tabs */}
-      <div className="flex px-4 pt-4 pb-2 border-b border-zinc-800/50 sticky top-0 bg-[#1E1E24] z-10 gap-6">
+      <div className="flex px-4 pt-4 pb-2 border-b border-zinc-800/50 sticky top-[57px] md:top-0 bg-[#1E1E24] z-10 gap-6">
         <button 
           onClick={() => setActiveTab('properties')}
           className={`font-medium text-xs pb-2 transition-colors ${activeTab === 'properties' ? 'text-white border-b-2 border-white' : 'text-zinc-500 hover:text-zinc-300'}`}

@@ -200,8 +200,8 @@ export default function TemplateSidebar() {
 
   return (
     <aside className="w-full h-full flex flex-col bg-[#1E1E24] text-zinc-400 overflow-hidden text-sm">
-      {/* Logo Area */}
-      <div className="flex items-center justify-between p-6 border-b border-zinc-800/50">
+      {/* Logo Area (Hidden on mobile to save space) */}
+      <div className="hidden md:flex items-center justify-between p-6 border-b border-zinc-800/50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-zinc-200 to-zinc-500 rounded-lg flex items-center justify-center shadow-lg">
             <span className="text-zinc-900 font-bold text-xl italic">S</span>
@@ -216,8 +216,19 @@ export default function TemplateSidebar() {
         </div>
       </div>
 
-      {/* Main Navigation */}
-      <div className="flex flex-col gap-2 p-4">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-900/50 sticky top-0 z-10">
+        <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Select Layout</span>
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent('close-sidebar'))}
+          className="p-2 bg-zinc-800 rounded-lg text-white"
+        >
+          <X size={16} />
+        </button>
+      </div>
+
+      {/* Main Navigation (Hidden on mobile) */}
+      <div className="hidden md:flex flex-col gap-2 p-4">
         <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-zinc-800/50 transition-colors w-full text-left">
           <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
           <span className="font-medium tracking-wide text-xs">DASHBOARD</span>
@@ -229,17 +240,9 @@ export default function TemplateSidebar() {
           </div>
           <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">Active</span>
         </button>
-        <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-zinc-800/50 transition-colors w-full text-left">
-          <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-          <span className="font-medium tracking-wide text-xs">TEMPLATES</span>
-        </button>
-        <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-zinc-800/50 transition-colors w-full text-left">
-          <svg className="w-5 h-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-          <span className="font-medium tracking-wide text-xs">ASSETS</span>
-        </button>
       </div>
 
-      <div className="w-full h-px bg-zinc-800/50 my-2"></div>
+      <div className="hidden md:block w-full h-px bg-zinc-800/50 my-2"></div>
 
       {/* Templates List */}
       <div className="flex items-center justify-between px-6 py-3">

@@ -1,4 +1,4 @@
-// src/components/studio/CardPreview/Elements/BrandItems/BrandItem.tsx
+// src/components/studio/CardPreview/Elements/UniversalBadge.tsx
 'use client'
 import React, { useContext, useState, useRef, useEffect } from 'react'
 import { BrandItemStyle, CardData } from '@/lib/types'

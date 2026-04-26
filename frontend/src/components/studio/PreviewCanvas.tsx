@@ -87,60 +87,50 @@ export default function PreviewCanvas() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#14141A] min-w-0 overflow-hidden border-t border-zinc-800/50 md:border-none">
-      {/* Top Action Bar */}
-      <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-zinc-800/50 bg-[#1E1E24]">
-        <div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800/50 p-1.5 rounded transition-colors">
-          <span className="text-white font-medium text-xs md:text-sm tracking-wide">newscards.studio</span>
-          <ChevronDown size={14} className="text-zinc-500" />
+    <div className="flex-1 flex flex-col bg-[#14141A] min-w-0 overflow-hidden">
+      {/* Top Action Bar (Sticky and compact on mobile) */}
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 md:px-6 py-2.5 border-b border-zinc-800/50 bg-[#1E1E24]/90 backdrop-blur-md">
+        <div className="flex items-center gap-2 cursor-pointer hover:bg-zinc-800/50 p-1 rounded transition-colors">
+          <span className="text-white font-bold text-[10px] md:text-sm tracking-tighter uppercase italic">Photocard Studio</span>
         </div>
 
         <div className="hidden md:flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
           <div className="flex items-center gap-2 text-zinc-400">
             <button className="p-1.5 hover:text-white hover:bg-zinc-700/50 rounded transition-colors"><Undo size={16} /></button>
             <button className="p-1.5 hover:text-white hover:bg-zinc-700/50 rounded transition-colors"><Redo size={16} /></button>
-            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-            <button className="p-1.5 hover:text-red-400 hover:bg-zinc-700/50 rounded transition-colors"><Trash2 size={16} /></button>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => handleAction('download')}
-              disabled={generateMutation.isPending}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs px-4 py-2 rounded-md transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] active:scale-95 disabled:opacity-50 disabled:grayscale"
-            >
-              <Download size={14} />
-              {generateMutation.isPending ? 'Processing...' : 'Download'}
-            </button>
-            
-            <button 
-              onClick={() => handleAction('share')}
-              disabled={generateMutation.isPending}
-              className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs px-4 py-2 rounded-md transition-all active:scale-95 disabled:opacity-50"
-            >
-              <Share2 size={14} />
-              Share
-            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700/50 rounded transition-colors">
-            <Settings size={16} />
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => handleAction('download')}
+            disabled={generateMutation.isPending}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-lg active:scale-95"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">Download</span>
+          </button>
+          <button 
+            onClick={() => handleAction('share')}
+            disabled={generateMutation.isPending}
+            className="flex md:hidden items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white p-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+          >
+            <Share2 size={14} />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto flex items-center justify-center p-4 md:p-8"
+      <div className="flex-1 overflow-auto flex items-center justify-center p-3 md:p-8 relative"
         style={{ backgroundImage: 'radial-gradient(circle, #1a1a1a 1px, transparent 1px)', backgroundSize: '20px 20px' }}
       >
         <div
           style={{
-            width: `${zoom}%`,
+            width: zoom === 100 ? '100%' : `${zoom}%`,
             maxWidth: 600,
-            minWidth: 200,
+            minWidth: 280,
             transition: 'width 0.2s',
           }}
+          className="relative z-0"
         >
           <CardPreview 
             key={`${cardData.headline}-${cardData.photos[0]?.src || 'no-photo'}`}
